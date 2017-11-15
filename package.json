@@ -1,0 +1,14 @@
+{
+    "name": "microfantasy",
+    "author": "Hugo Sereno Ferreira",
+    "version": "0.1.0",
+    "dependencies": {
+        "lodash": "^4.17.4"
+    },
+    "devDependencies": {
+        "@types/lodash": "^4.14.74",
+        "tslint": "^5.8.0",
+        "tslint-config-airbnb": "^5.2.1",
+        "typescript": "^2.6.1"
+    }
+}
