@@ -1,4 +1,3 @@
 node_modules
 *.map
-engine.js
 .vscode/settings.json

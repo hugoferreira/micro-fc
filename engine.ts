@@ -10,7 +10,7 @@ const texture = image.data
 const videomem = Array(width * height).fill(0)
 const spritesheet = Array(width * height).fill(0)
 
-let btnstate = [0, 0, 0, 0, 0, 0]
+let btnstate = Array(6).fill(0)
 
 const pal = [
     [0, 0, 0], [29, 43, 83], [126, 37, 83], [0, 135, 81],
@@ -45,7 +45,7 @@ function refresh() {
 }
 
 function verticalsync() {
-    btnstate = [0, 0, 0, 0, 0, 0]
+    btnstate = Array(6).fill(0)
 }
 
 function keyHandler(e) {
