@@ -1,4 +1,4 @@
-const fps = 1
+const fps = 10
 const width = 128
 const height = 128
 const swidth = 512
@@ -10,7 +10,7 @@ const texture = image.data
 const videomem = Array(width * height).fill(0)
 const spritesheet = Array(width * height).fill(0)
 
-const btnstate = [0, 0, 0, 0, 0, 0]
+let btnstate = [0, 0, 0, 0, 0, 0]
 
 const pal = [
     [0, 0, 0], [29, 43, 83], [126, 37, 83], [0, 135, 81],
@@ -24,6 +24,7 @@ let update: () => void
 function eventLoop() {
     if (update !== undefined) update()
     refresh()
+    verticalsync()
 }
 
 function refresh() {
@@ -41,6 +42,10 @@ function refresh() {
     }
 
     ctx.putImageData(image, 0, 0)
+}
+
+function verticalsync() {
+    btnstate = [0, 0, 0, 0, 0, 0]
 }
 
 function keyHandler(e) {
@@ -63,6 +68,24 @@ function pget(x, y) {
     return videomem[y * width + x]
 }
 
+// TODO: DDA Algorithm; update to Bresenham’s ?
+function line(x0, y0, x1, y1, color) {
+    const dx = x1 - x0
+    const dy = y1 - y0
+    const steps = (Math.abs(dx) > Math.abs(dy)) ? Math.abs(dx) : Math.abs(dy)
+    const xinc = dx / steps
+    const yinc = dy / steps
+    let x = x0
+    let y = y0
+
+    pset(x, y, color)
+    for (let v = 0; v < steps; v += 1) {
+        x = x + xinc
+        y = y + yinc
+        pset(Math.round(x), Math.round(y), color)
+    }
+}
+
 function cls(color) {
     videomem.fill(color)
 }
@@ -74,6 +97,6 @@ function btn(n) {
 // Initialize
 
 window.onload = () => {
-    window.setInterval(() => eventLoop(), 1000 / fps)
     window.addEventListener('keydown', keyHandler, true)
+    window.setInterval(() => eventLoop(), 1000 / fps)
 }
