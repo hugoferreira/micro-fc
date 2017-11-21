@@ -24,18 +24,19 @@ const palette = [
     [41, 173, 255], [131, 118, 156], [255, 119, 158], [255, 204, 170]
 ]
 
-const drawingState = {
-    borderColor: 0
+const drawState = {
+    borderColor: 0,
+    penColor: 7
 }
 
-let update: () => void
-let verticalsync: () => void
 let init: () => void
+let update: () => void
+let draw: () => void
 
 function eventLoop() {
     if (update !== undefined) update()
+    if (draw !== undefined) draw()
     refresh()
-    if (verticalsync !== undefined) verticalsync()
 }
 
 function refresh() {
@@ -52,7 +53,7 @@ function refresh() {
         }
     }
 
-    const borderRGB = palette[drawingState.borderColor]
+    const borderRGB = palette[drawState.borderColor]
     ctx.fillStyle = `rgb(${borderRGB[0]}, ${borderRGB[1]}, ${borderRGB[2]})`
     ctx.fillRect(0, 0, screenWidth + borderSize * 2, screenHeight + borderSize * 2)
     ctx.putImageData(image, borderSize, borderSize)
@@ -65,30 +66,32 @@ const fontWidth = 6
 const fontHeight = 6
 const encodedBits = 8
 
-function drawChar(x0: number, y0: number, symbol: number, pen: number, paper: number = undefined) {
+function drawChar(x0: number, y0: number, symbol: number, pen?: number, paper?: number) {
     const ptr = symbol * 8
+
     for (let y = 0; y < fontWidth; y += 1)
         for (let x = 0; x < fontHeight; x += 1) {
-            const bit = (font[ptr + y] & (1 << (encodedBits - 1 - x))) ? pen : paper
-            if (bit !== undefined) poke((y + y0) * width + x + x0, bit)
+            const bit = font[ptr + y] & (1 << (encodedBits - 1 - x))
+            if (bit !== 0) pset(x + x0, y + y0, pen)
+            else if (paper !== undefined) pset(x + x0, y + y0, paper)
         }
 }
 
 // API
-function peek(n: number) {
-    return videomem[n]
+function peek(addr: number) {
+    return videomem[addr]
 }
 
-function poke(n: number, v: number) {
-    videomem[n] = v
+function poke(addr: number, value: number) {
+    videomem[addr] = value
 }
 
 function rnd(n: number) {
     return Math.floor(Math.random() * (Math.floor(n) + 1))
 }
 
-function pset(x: number, y: number, color: number) {
-    videomem[y * width + x] = color
+function pset(x: number, y: number, color?: number) {
+    videomem[y * width + x] = (color !== undefined ? color : drawState.penColor)
 }
 
 function pget(x: number, y: number) {
@@ -96,21 +99,28 @@ function pget(x: number, y: number) {
 }
 
 // TODO: DDA Algorithm; update to Bresenham’s ?
-function line(x0: number, y0: number, x1: number, y1: number, color: number) {
+function line(x0: number, y0: number, x1: number, y1: number, color?: number) {
     const dx = x1 - x0
     const dy = y1 - y0
     const steps = (Math.abs(dx) > Math.abs(dy)) ? Math.abs(dx) : Math.abs(dy)
     const xinc = dx / steps
     const yinc = dy / steps
-    let x = x0
-    let y = y0
 
-    pset(x, y, color)
-    for (let v = 0; v < steps; v += 1) {
-        x = x + xinc
-        y = y + yinc
+    for (let v = 0, x = x0, y = y0; v < steps; v += 1, x += xinc, y += yinc)
         pset(Math.round(x), Math.round(y), color)
-    }
+}
+
+function rect(x0: number, y0: number, x1: number, y1: number, color?: number) {
+    line(x0, y0, x1, y0, color)
+    line(x1, y0, x1, y1, color)
+    line(x1, y1, x0, y1, color)
+    line(x0, y1, x0, y0, color)
+}
+
+function rectfill(x0: number, y0: number, x1: number, y1: number, color?: number) {
+    for (let y = y0; y <= y1; y += 1)
+        for (let x = x0; x <= x1; x += 1)
+            pset(x, y, color)
 }
 
 function cls(color: number) {
@@ -122,15 +132,19 @@ function btn(n: number) {
 }
 
 function print() { } // deactivate the print() function from browser
-function print(str: string, x: number, y: number, pen: number, paper: number = undefined, wrap = true) {
+function print(str: string, x: number, y: number, pen?: number, paper?: number, wrap = true) {
     for (let i = 0, x0 = x, y0 = y; i < str.length; i += 1, x0 += fontWidth) {
         if (wrap && (width - x0) < fontWidth) { y0 += fontHeight; x0 = 0}
         drawChar(x0, y0, str.charCodeAt(i), pen, paper)
     }
 }
 
+function pen(color: number) {
+    drawState.penColor = color
+}
+
 function border(color: number) {
-    drawingState.borderColor = color
+    drawState.borderColor = color
 }
 
 // Initialize

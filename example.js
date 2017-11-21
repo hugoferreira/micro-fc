@@ -4,12 +4,11 @@ let ydir = 1
 
 function init() {
     border(1)
+    cls(1)
 }
 
 function update() {
     frame += 1
-
-    print("o", x, y, frame % 16)
 
     if (x > 128 - fontWidth - 1) xdir = -1
     else if (x == 0) xdir = 1
@@ -21,4 +20,9 @@ function update() {
     y += ydir
 
     if (mouse.click) pset(mouse.x, mouse.y, 15)
+}
+
+function draw() {
+    rectfill(20, 20, 80, 80, 12)
+    print("o", x, y, frame % 16)
 }

@@ -20,18 +20,19 @@ var palette = [
     [255, 0, 77], [255, 163, 0], [255, 236, 39], [0, 228, 54],
     [41, 173, 255], [131, 118, 156], [255, 119, 158], [255, 204, 170]
 ];
-var drawingState = {
-    borderColor: 0
+var drawState = {
+    borderColor: 0,
+    penColor: 7
 };
-var update;
-var verticalsync;
 var init;
+var update;
+var draw;
 function eventLoop() {
     if (update !== undefined)
         update();
+    if (draw !== undefined)
+        draw();
     refresh();
-    if (verticalsync !== undefined)
-        verticalsync();
 }
 function refresh() {
     for (var y = 0; y < screenWidth; y += 1) {
@@ -45,7 +46,7 @@ function refresh() {
             texture[i2 + 3] = 255;
         }
     }
-    var borderRGB = palette[drawingState.borderColor];
+    var borderRGB = palette[drawState.borderColor];
     ctx.fillStyle = "rgb(" + borderRGB[0] + ", " + borderRGB[1] + ", " + borderRGB[2] + ")";
     ctx.fillRect(0, 0, screenWidth + borderSize * 2, screenHeight + borderSize * 2);
     ctx.putImageData(image, borderSize, borderSize);
@@ -56,27 +57,28 @@ var fontWidth = 6;
 var fontHeight = 6;
 var encodedBits = 8;
 function drawChar(x0, y0, symbol, pen, paper) {
-    if (paper === void 0) { paper = undefined; }
     var ptr = symbol * 8;
     for (var y = 0; y < fontWidth; y += 1)
         for (var x = 0; x < fontHeight; x += 1) {
-            var bit = (font[ptr + y] & (1 << (encodedBits - 1 - x))) ? pen : paper;
-            if (bit !== undefined)
-                poke((y + y0) * width + x + x0, bit);
+            var bit = font[ptr + y] & (1 << (encodedBits - 1 - x));
+            if (bit !== 0)
+                pset(x + x0, y + y0, pen);
+            else if (paper !== undefined)
+                pset(x + x0, y + y0, paper);
         }
 }
 // API
-function peek(n) {
-    return videomem[n];
+function peek(addr) {
+    return videomem[addr];
 }
-function poke(n, v) {
-    videomem[n] = v;
+function poke(addr, value) {
+    videomem[addr] = value;
 }
 function rnd(n) {
     return Math.floor(Math.random() * (Math.floor(n) + 1));
 }
 function pset(x, y, color) {
-    videomem[y * width + x] = color;
+    videomem[y * width + x] = (color !== undefined ? color : drawState.penColor);
 }
 function pget(x, y) {
     return videomem[y * width + x];
@@ -88,14 +90,19 @@ function line(x0, y0, x1, y1, color) {
     var steps = (Math.abs(dx) > Math.abs(dy)) ? Math.abs(dx) : Math.abs(dy);
     var xinc = dx / steps;
     var yinc = dy / steps;
-    var x = x0;
-    var y = y0;
-    pset(x, y, color);
-    for (var v = 0; v < steps; v += 1) {
-        x = x + xinc;
-        y = y + yinc;
+    for (var v = 0, x = x0, y = y0; v < steps; v += 1, x += xinc, y += yinc)
         pset(Math.round(x), Math.round(y), color);
-    }
+}
+function rect(x0, y0, x1, y1, color) {
+    line(x0, y0, x1, y0, color);
+    line(x1, y0, x1, y1, color);
+    line(x1, y1, x0, y1, color);
+    line(x0, y1, x0, y0, color);
+}
+function rectfill(x0, y0, x1, y1, color) {
+    for (var y = y0; y <= y1; y += 1)
+        for (var x = x0; x <= x1; x += 1)
+            pset(x, y, color);
 }
 function cls(color) {
     videomem.fill(color);
@@ -105,7 +112,6 @@ function btn(n) {
 }
 function print() { } // deactivate the print() function from browser
 function print(str, x, y, pen, paper, wrap) {
-    if (paper === void 0) { paper = undefined; }
     if (wrap === void 0) { wrap = true; }
     for (var i = 0, x0 = x, y0 = y; i < str.length; i += 1, x0 += fontWidth) {
         if (wrap && (width - x0) < fontWidth) {
@@ -115,8 +121,11 @@ function print(str, x, y, pen, paper, wrap) {
         drawChar(x0, y0, str.charCodeAt(i), pen, paper);
     }
 }
+function pen(color) {
+    drawState.penColor = color;
+}
 function border(color) {
-    drawingState.borderColor = color;
+    drawState.borderColor = color;
 }
 // Initialize
 window.onload = function () {
