@@ -10,7 +10,7 @@ const borderSize = 32
 const canvas = <HTMLCanvasElement> document.getElementById('myCanvas')
 const ctx = canvas.getContext('2d')
 const image = ctx.createImageData(screenWidth, screenHeight)
-const texture = image.data
+const texture = image.data.fill(255)
 const videomem = Array(width * height).fill(0)
 const spritesheet = Array(width * height).fill(0)
 
@@ -49,7 +49,6 @@ function refresh() {
             texture[i2 + 0] = color[0]
             texture[i2 + 1] = color[1]
             texture[i2 + 2] = color[2]
-            texture[i2 + 3] = 255
         }
     }
 
@@ -123,7 +122,7 @@ function rectfill(x0: number, y0: number, x1: number, y1: number, color?: number
             pset(x, y, color)
 }
 
-function cls(color: number) {
+function cls(color: number = 0) {
     videomem.fill(color)
 }
 
@@ -146,6 +145,7 @@ function pen(color: number) {
 function border(color: number) {
     drawState.borderColor = color
 }
+
 
 // Initialize
 

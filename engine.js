@@ -9,7 +9,7 @@ var borderSize = 32;
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
 var image = ctx.createImageData(screenWidth, screenHeight);
-var texture = image.data;
+var texture = image.data.fill(255);
 var videomem = Array(width * height).fill(0);
 var spritesheet = Array(width * height).fill(0);
 var btnstate = Array(6).fill(0);
@@ -43,7 +43,6 @@ function refresh() {
             texture[i2 + 0] = color[0];
             texture[i2 + 1] = color[1];
             texture[i2 + 2] = color[2];
-            texture[i2 + 3] = 255;
         }
     }
     var borderRGB = palette[drawState.borderColor];
@@ -105,6 +104,7 @@ function rectfill(x0, y0, x1, y1, color) {
             pset(x, y, color);
 }
 function cls(color) {
+    if (color === void 0) { color = 0; }
     videomem.fill(color);
 }
 function btn(n) {

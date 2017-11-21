@@ -13,7 +13,7 @@ function update() {
     line(0, 64, 127, 127)
 
     pen(1)
-    pset(x, y)
+    pset(x, y, 0)
     pset(x - 1, y)
     pset(x + 1, y)
     pset(x, y - 1)

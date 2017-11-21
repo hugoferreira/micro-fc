@@ -19,7 +19,10 @@ function update() {
     x += xdir
     y += ydir
 
-    if (mouse.click) pset(mouse.x, mouse.y, 15)
+    if (mouse.click) {
+        pset(mouse.x, mouse.y, 15)
+        beep(400)
+    }
 }
 
 function draw() {
