@@ -19,20 +19,14 @@ function init() {
             })
 }
 
-function gridMouse(x0, y0, width, height, hslices, vslices) {
-    return inrect(mouse.x, mouse.y, x0, y0, x0 + width, y0 + width) ? {
-        x: Math.max(Math.floor((mouse.x - x0) / (width / hslices)), 0),
-        y: Math.max(Math.floor((mouse.y - y0) / (height / vslices)), 0)
-    } : undefined
-}
-
-function onClickSpriteEditor(x0, y0) {
+function onSpriteEditorClick(x0, y0) {
     if (mouse.click) {
-        const clickSpot = gridMouse(x0, y0, 64, 64, 8, 8)
+        const clickSpot = posgrid(mouse.x, mouse.y, x0, y0, 64, 64, 8, 8)
         if (clickSpot !== undefined)
-            sprite[clickSpot.y * 8 + clickSpot.x] = color
+            sset(0, clickSpot.x, clickSpot.y, color)
     }
 }
+
 function drawPalette() {
     swatches.forEach(s =>
         rectfill(s.x0, s.y0, s.x1, s.y1, s.color)
@@ -56,8 +50,8 @@ function update() {
     pen(7)
     print(`Mouse: ${mouse.x}, ${mouse.y} ${mouse.click?'*':''}`, 1, 1)
     drawPalette()
-    spr(64, 9, 8)
+    spr(0, 64, 9, 8)
     onPaletteClick()
-    onClickSpriteEditor(64, 9)
+    onSpriteEditorClick(64, 9)
     print(`Color: ${color}`, 0, 64)
 }

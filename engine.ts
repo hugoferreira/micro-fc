@@ -6,6 +6,7 @@ const screenHeight = 384
 const xScale = screenWidth / width
 const yScale = screenHeight / height
 const borderSize = 48
+const spriteSize = 64
 
 const canvas = <HTMLCanvasElement> document.getElementById('myCanvas')
 // canvas.style.cursor = 'none' // TODO: Implement software cursor
@@ -14,7 +15,7 @@ const ctx = canvas.getContext('2d')
 const image = ctx.createImageData(screenWidth, screenHeight)
 const texture = image.data.fill(255)
 const videomem = Array(width * height).fill(0)
-const spritesheet = Array(width * height).fill(0)
+const spriteSheet = Array(128 * spriteSize).fill(0)
 
 const btnstate = Array(6).fill(0)
 
@@ -141,6 +142,14 @@ function inrect(x, y, x0, y0, x1, y1) {
     return (x >= x0 && x <= x1 && y >= y0 && y <= y1)
 }
 
+function posgrid(x, y, x0, y0, width, height, hslices, vslices) {
+    return inrect(x, y, x0, y0, x0 + width, y0 + width) ? {
+        x: clamp(Math.floor((mouse.x - x0) / (width / hslices)), hslices - 1, 0),
+        y: clamp(Math.floor((mouse.y - y0) / (height / vslices)), vslices - 1, 0)
+    } : undefined
+}
+
+
 function cls(color: number = 0) {
     videomem.fill(color)
 }
@@ -166,18 +175,16 @@ function border(color: number) {
     drawState.borderChanged = true
 }
 
-const sprite = Array(64).fill(0).map(_ => rnd(10))
-
-function spr(x0, y0, scale = 1) {
-    for (let p = 0; p < sprite.length; p += 1) {
+function spr(s: number, x0: number, y0: number, scale = 1) {
+    for (let p = 0; p < spriteSheet.length; p += 1) {
         const x = (p % 8) * scale + x0
         const y = (Math.floor(p / 8)) * scale + y0
-        rectfill(x, y, x + (scale - 1), y + (scale - 1), sprite[p])
+        rectfill(x, y, x + (scale - 1), y + (scale - 1), spriteSheet[s * spriteSize + p])
     }
 }
 
-function sset(x, y, color) {
-    sprite[y * 8 + x] = color
+function sset(s: number, x: number, y: number, color?) {
+    spriteSheet[s * spriteSize + y * 8 + x] = color || drawState.penColor
 }
 
 // Initialize
@@ -185,8 +192,8 @@ function sset(x, y, color) {
 window.onload = () => {
     canvas.addEventListener('mousemove', (evt) => {
         const rect = canvas.getBoundingClientRect()
-        mouse.x = Math.max(Math.min(Math.floor((evt.clientX - rect.left - borderSize) / xScale), width - 1), 0)
-        mouse.y = Math.max(Math.min(Math.floor((evt.clientY - rect.top - borderSize) / yScale), height - 1), 0)
+        mouse.x = clamp(Math.floor((evt.clientX - rect.left - borderSize) / xScale), width - 1, 0)
+        mouse.y = clamp(Math.floor((evt.clientY - rect.top - borderSize) / yScale), height - 1, 0)
     }, false)
 
     canvas.addEventListener('mousedown', () => { mouse.click = true }, false)

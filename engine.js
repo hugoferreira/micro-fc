@@ -6,13 +6,14 @@ var screenHeight = 384;
 var xScale = screenWidth / width;
 var yScale = screenHeight / height;
 var borderSize = 48;
+var spriteSize = 64;
 var canvas = document.getElementById('myCanvas');
 // canvas.style.cursor = 'none' // TODO: Implement software cursor
 var ctx = canvas.getContext('2d');
 var image = ctx.createImageData(screenWidth, screenHeight);
 var texture = image.data.fill(255);
 var videomem = Array(width * height).fill(0);
-var spritesheet = Array(width * height).fill(0);
+var spriteSheet = Array(128 * spriteSize).fill(0);
 var btnstate = Array(6).fill(0);
 var mouse = { x: 0, y: 0, click: false };
 var palette = [
@@ -119,6 +120,12 @@ function rectfill(x0, y0, x1, y1, color) {
 function inrect(x, y, x0, y0, x1, y1) {
     return (x >= x0 && x <= x1 && y >= y0 && y <= y1);
 }
+function posgrid(x, y, x0, y0, width, height, hslices, vslices) {
+    return inrect(x, y, x0, y0, x0 + width, y0 + width) ? {
+        x: clamp(Math.floor((mouse.x - x0) / (width / hslices)), hslices - 1, 0),
+        y: clamp(Math.floor((mouse.y - y0) / (height / vslices)), vslices - 1, 0)
+    } : undefined;
+}
 function cls(color) {
     if (color === void 0) { color = 0; }
     videomem.fill(color);
@@ -144,24 +151,23 @@ function border(color) {
     drawState.borderColor = color;
     drawState.borderChanged = true;
 }
-var sprite = Array(64).fill(0).map(function (_) { return rnd(10); });
-function spr(x0, y0, scale) {
+function spr(s, x0, y0, scale) {
     if (scale === void 0) { scale = 1; }
-    for (var p = 0; p < sprite.length; p += 1) {
+    for (var p = 0; p < spriteSheet.length; p += 1) {
         var x = (p % 8) * scale + x0;
         var y = (Math.floor(p / 8)) * scale + y0;
-        rectfill(x, y, x + (scale - 1), y + (scale - 1), sprite[p]);
+        rectfill(x, y, x + (scale - 1), y + (scale - 1), spriteSheet[s * spriteSize + p]);
     }
 }
-function sset(x, y, color) {
-    sprite[y * 8 + x] = color;
+function sset(s, x, y, color) {
+    spriteSheet[s * spriteSize + y * 8 + x] = color || drawState.penColor;
 }
 // Initialize
 window.onload = function () {
     canvas.addEventListener('mousemove', function (evt) {
         var rect = canvas.getBoundingClientRect();
-        mouse.x = Math.max(Math.min(Math.floor((evt.clientX - rect.left - borderSize) / xScale), width - 1), 0);
-        mouse.y = Math.max(Math.min(Math.floor((evt.clientY - rect.top - borderSize) / yScale), height - 1), 0);
+        mouse.x = clamp(Math.floor((evt.clientX - rect.left - borderSize) / xScale), width - 1, 0);
+        mouse.y = clamp(Math.floor((evt.clientY - rect.top - borderSize) / yScale), height - 1, 0);
     }, false);
     canvas.addEventListener('mousedown', function () { mouse.click = true; }, false);
     canvas.addEventListener('mouseup', function () { mouse.click = false; }, false);
