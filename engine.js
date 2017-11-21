@@ -144,6 +144,18 @@ function border(color) {
     drawState.borderColor = color;
     drawState.borderChanged = true;
 }
+var sprite = Array(64).fill(0).map(function (_) { return rnd(10); });
+function spr(x0, y0, scale) {
+    if (scale === void 0) { scale = 1; }
+    for (var p = 0; p < sprite.length; p += 1) {
+        var x = (p % 8) * scale + x0;
+        var y = (Math.floor(p / 8)) * scale + y0;
+        rectfill(x, y, x + (scale - 1), y + (scale - 1), sprite[p]);
+    }
+}
+function sset(x, y, color) {
+    sprite[y * 8 + x] = color;
+}
 // Initialize
 window.onload = function () {
     canvas.addEventListener('mousemove', function (evt) {

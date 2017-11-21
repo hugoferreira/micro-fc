@@ -19,16 +19,6 @@ function init() {
             })
 }
 
-const sprite = Array(64).fill(0).map(_ => rnd(10))
-
-function drawSprite(x0, y0) {
-    for (let p = 0; p < sprite.length; p += 1) {
-        const x = (p % 8) * 8 + x0
-        const y = (Math.floor(p / 8)) * 8 + y0
-        rectfill(x, y, x + 7, y + 7, sprite[p])
-    }
-}
-
 function gridMouse(x0, y0, width, height, hslices, vslices) {
     return inrect(mouse.x, mouse.y, x0, y0, x0 + width, y0 + width) ? {
         x: Math.max(Math.floor((mouse.x - x0) / (width / hslices)), 0),
@@ -66,7 +56,7 @@ function update() {
     pen(7)
     print(`Mouse: ${mouse.x}, ${mouse.y} ${mouse.click?'*':''}`, 1, 1)
     drawPalette()
-    drawSprite(64, 9)
+    spr(64, 9, 8)
     onPaletteClick()
     onClickSpriteEditor(64, 9)
     print(`Color: ${color}`, 0, 64)

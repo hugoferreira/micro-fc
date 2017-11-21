@@ -166,6 +166,20 @@ function border(color: number) {
     drawState.borderChanged = true
 }
 
+const sprite = Array(64).fill(0).map(_ => rnd(10))
+
+function spr(x0, y0, scale = 1) {
+    for (let p = 0; p < sprite.length; p += 1) {
+        const x = (p % 8) * scale + x0
+        const y = (Math.floor(p / 8)) * scale + y0
+        rectfill(x, y, x + (scale - 1), y + (scale - 1), sprite[p])
+    }
+}
+
+function sset(x, y, color) {
+    sprite[y * 8 + x] = color
+}
+
 // Initialize
 
 window.onload = () => {
