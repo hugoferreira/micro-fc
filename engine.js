@@ -7,6 +7,7 @@ var xScale = screenWidth / width;
 var yScale = screenHeight / height;
 var borderSize = 48;
 var canvas = document.getElementById('myCanvas');
+// canvas.style.cursor = 'none' // TODO: Implement software cursor
 var ctx = canvas.getContext('2d');
 var image = ctx.createImageData(screenWidth, screenHeight);
 var texture = image.data.fill(255);
@@ -22,7 +23,8 @@ var palette = [
 ];
 var drawState = {
     borderColor: 0,
-    penColor: 7
+    penColor: 7,
+    borderChanged: true
 };
 var init;
 var update;
@@ -32,7 +34,15 @@ function eventLoop() {
         update();
     if (draw !== undefined)
         draw();
+    if (drawState.borderChanged)
+        refreshBorder();
     refresh();
+}
+function refreshBorder() {
+    var borderRGB = palette[drawState.borderColor];
+    ctx.fillStyle = "rgb(" + borderRGB[0] + ", " + borderRGB[1] + ", " + borderRGB[2] + ")";
+    ctx.fillRect(0, 0, screenWidth + borderSize * 2, screenHeight + borderSize * 2);
+    drawState.borderChanged = false;
 }
 function refresh() {
     for (var y = 0; y < screenWidth; y += 1) {
@@ -45,9 +55,6 @@ function refresh() {
             texture[i2 + 2] = color[2];
         }
     }
-    var borderRGB = palette[drawState.borderColor];
-    ctx.fillStyle = "rgb(" + borderRGB[0] + ", " + borderRGB[1] + ", " + borderRGB[2] + ")";
-    ctx.fillRect(0, 0, screenWidth + borderSize * 2, screenHeight + borderSize * 2);
     ctx.putImageData(image, borderSize, borderSize);
 }
 // Text
@@ -132,6 +139,7 @@ function pen(color) {
 }
 function border(color) {
     drawState.borderColor = color;
+    drawState.borderChanged = true;
 }
 // Initialize
 window.onload = function () {

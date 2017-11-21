@@ -8,6 +8,8 @@ const yScale = screenHeight / height
 const borderSize = 48
 
 const canvas = <HTMLCanvasElement> document.getElementById('myCanvas')
+// canvas.style.cursor = 'none' // TODO: Implement software cursor
+
 const ctx = canvas.getContext('2d')
 const image = ctx.createImageData(screenWidth, screenHeight)
 const texture = image.data.fill(255)
@@ -26,7 +28,8 @@ const palette = [
 
 const drawState = {
     borderColor: 0,
-    penColor: 7
+    penColor: 7,
+    borderChanged: true
 }
 
 let init: () => void
@@ -36,7 +39,15 @@ let draw: () => void
 function eventLoop() {
     if (update !== undefined) update()
     if (draw !== undefined) draw()
+    if (drawState.borderChanged) refreshBorder()
     refresh()
+}
+
+function refreshBorder() {
+    const borderRGB = palette[drawState.borderColor]
+    ctx.fillStyle = `rgb(${borderRGB[0]}, ${borderRGB[1]}, ${borderRGB[2]})`
+    ctx.fillRect(0, 0, screenWidth + borderSize * 2, screenHeight + borderSize * 2)
+    drawState.borderChanged = false
 }
 
 function refresh() {
@@ -52,9 +63,6 @@ function refresh() {
         }
     }
 
-    const borderRGB = palette[drawState.borderColor]
-    ctx.fillStyle = `rgb(${borderRGB[0]}, ${borderRGB[1]}, ${borderRGB[2]})`
-    ctx.fillRect(0, 0, screenWidth + borderSize * 2, screenHeight + borderSize * 2)
     ctx.putImageData(image, borderSize, borderSize)
 }
 
@@ -149,8 +157,8 @@ function pen(color: number) {
 
 function border(color: number) {
     drawState.borderColor = color
+    drawState.borderChanged = true
 }
-
 
 // Initialize
 
