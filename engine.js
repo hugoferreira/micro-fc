@@ -7,13 +7,15 @@ var xScale = screenWidth / width;
 var yScale = screenHeight / height;
 var borderSize = 48;
 var spriteSize = 64;
+var spriteSheetSize = 128 * spriteSize;
+var spriteBanks = 8;
 var canvas = document.getElementById('myCanvas');
 // canvas.style.cursor = 'none' // TODO: Implement software cursor
 var ctx = canvas.getContext('2d');
 var image = ctx.createImageData(screenWidth, screenHeight);
 var texture = image.data.fill(255);
 var videomem = Array(width * height).fill(0);
-var spriteSheet = Array(128 * spriteSize).fill(0);
+var spriteSheet = Array(spriteSheetSize * spriteBanks).fill(0);
 var btnstate = Array(6).fill(0);
 var mouse = { x: 0, y: 0, click: false };
 var palette = [
@@ -25,7 +27,9 @@ var palette = [
 var drawState = {
     borderColor: 0,
     penColor: 7,
-    borderChanged: true
+    spriteBank: 1,
+    borderChanged: true,
+    clipArea: { x0: 0, y0: 0, x1: width, y1: height }
 };
 var init;
 var update;
@@ -90,8 +94,10 @@ function rnd(n) {
     return Math.floor(Math.random() * (Math.floor(n) + 1));
 }
 function pset(x, y, color) {
-    if (x >= 0 && x < width && y >= 0 && y < height)
-        videomem[y * width + x] = (color !== undefined ? color : drawState.penColor);
+    if (color === void 0) { color = drawState.penColor; }
+    var c = drawState.clipArea;
+    if (inrect(x, y, c.x0, c.y0, c.x1, c.y1))
+        videomem[y * width + x] = color;
 }
 function pget(x, y) {
     return videomem[y * width + x];
@@ -119,6 +125,13 @@ function rectfill(x0, y0, x1, y1, color) {
 }
 function inrect(x, y, x0, y0, x1, y1) {
     return (x >= x0 && x <= x1 && y >= y0 && y <= y1);
+}
+function clip(x0, y0, x1, y1) {
+    if (x0 === void 0) { x0 = 0; }
+    if (y0 === void 0) { y0 = 0; }
+    if (x1 === void 0) { x1 = width; }
+    if (y1 === void 0) { y1 = height; }
+    drawState.clipArea = { x0: x0, y0: y0, x1: x1, y1: y1 };
 }
 function posgrid(x, y, x0, y0, width, height, hslices, vslices) {
     return inrect(x, y, x0, y0, x0 + width, y0 + width) ? {
@@ -151,16 +164,28 @@ function border(color) {
     drawState.borderColor = color;
     drawState.borderChanged = true;
 }
-function spr(s, x0, y0, scale) {
+function bank(value) {
+    drawState.spriteBank = value;
+}
+function spr(s, x0, y0, scale, transparentColor, bank) {
     if (scale === void 0) { scale = 1; }
-    for (var p = 0; p < spriteSheet.length; p += 1) {
-        var x = (p % 8) * scale + x0;
-        var y = (Math.floor(p / 8)) * scale + y0;
-        rectfill(x, y, x + (scale - 1), y + (scale - 1), spriteSheet[s * spriteSize + p]);
+    if (transparentColor === void 0) { transparentColor = 0; }
+    if (bank === void 0) { bank = drawState.spriteBank; }
+    var offset = spriteSheetSize * bank + s * spriteSize;
+    for (var p = 0; p < spriteSize; p += 1) {
+        var color = spriteSheet[offset + p];
+        if (color !== transparentColor) {
+            var x = (p % 8) * scale + x0;
+            var y = (Math.floor(p / 8)) * scale + y0;
+            rectfill(x, y, x + (scale - 1), y + (scale - 1), color);
+        }
     }
 }
-function sset(s, x, y, color) {
-    spriteSheet[s * spriteSize + y * 8 + x] = color || drawState.penColor;
+function sset(s, x, y, color, bank) {
+    if (color === void 0) { color = drawState.penColor; }
+    if (bank === void 0) { bank = drawState.spriteBank; }
+    var offset = spriteSheetSize * drawState.spriteBank + s * spriteSize;
+    spriteSheet[offset + y * 8 + x] = color;
 }
 // Initialize
 window.onload = function () {

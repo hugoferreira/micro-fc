@@ -7,6 +7,8 @@ const xScale = screenWidth / width
 const yScale = screenHeight / height
 const borderSize = 48
 const spriteSize = 64
+const spriteSheetSize = 128 * spriteSize
+const spriteBanks = 8
 
 const canvas = <HTMLCanvasElement> document.getElementById('myCanvas')
 // canvas.style.cursor = 'none' // TODO: Implement software cursor
@@ -15,7 +17,7 @@ const ctx = canvas.getContext('2d')
 const image = ctx.createImageData(screenWidth, screenHeight)
 const texture = image.data.fill(255)
 const videomem = Array(width * height).fill(0)
-const spriteSheet = Array(128 * spriteSize).fill(0)
+const spriteSheet = Array(spriteSheetSize * spriteBanks).fill(0)
 
 const btnstate = Array(6).fill(0)
 
@@ -31,7 +33,9 @@ const palette = [
 const drawState = {
     borderColor: 0,
     penColor: 7,
-    borderChanged: true
+    spriteBank: 1,
+    borderChanged: true,
+    clipArea: { x0: 0, y0: 0, x1: width, y1: height }
 }
 
 let init: () => void
@@ -104,9 +108,9 @@ function rnd(n: number) {
     return Math.floor(Math.random() * (Math.floor(n) + 1))
 }
 
-function pset(x: number, y: number, color?: number) {
-    if (x >= 0 && x < width && y >= 0 && y < height)
-        videomem[y * width + x] = (color !== undefined ? color : drawState.penColor)
+function pset(x: number, y: number, color: number = drawState.penColor) {
+    const c = drawState.clipArea
+    if (inrect(x, y, c.x0, c.y0, c.x1, c.y1)) videomem[y * width + x] = color
 }
 
 function pget(x: number, y: number) {
@@ -142,6 +146,10 @@ function inrect(x: number, y: number, x0: number, y0: number, x1: number, y1: nu
     return (x >= x0 && x <= x1 && y >= y0 && y <= y1)
 }
 
+function clip(x0 = 0, y0 = 0, x1 = width, y1 = height) {
+    drawState.clipArea = { x0, y0, x1, y1 }
+}
+
 function posgrid(x: number, y: number, x0: number, y0: number, width: number, height: number, hslices: number, vslices: number) {
     return inrect(x, y, x0, y0, x0 + width, y0 + width) ? {
         x: clamp(Math.floor((mouse.x - x0) / (width / hslices)), hslices - 1, 0),
@@ -175,16 +183,25 @@ function border(color: number) {
     drawState.borderChanged = true
 }
 
-function spr(s: number, x0: number, y0: number, scale = 1) {
-    for (let p = 0; p < spriteSheet.length; p += 1) {
-        const x = (p % 8) * scale + x0
-        const y = (Math.floor(p / 8)) * scale + y0
-        rectfill(x, y, x + (scale - 1), y + (scale - 1), spriteSheet[s * spriteSize + p])
+function bank(value: number) {
+    drawState.spriteBank = value
+}
+
+function spr(s: number, x0: number, y0: number, scale = 1, transparentColor = 0, bank: number = drawState.spriteBank) {
+    const offset = spriteSheetSize * bank + s * spriteSize
+    for (let p = 0; p < spriteSize; p += 1) {
+        const color = spriteSheet[offset + p]
+        if (color !== transparentColor) {
+            const x = (p % 8) * scale + x0
+            const y = (Math.floor(p / 8)) * scale + y0
+            rectfill(x, y, x + (scale - 1), y + (scale - 1), color)
+        }
     }
 }
 
-function sset(s: number, x: number, y: number, color?) {
-    spriteSheet[s * spriteSize + y * 8 + x] = color || drawState.penColor
+function sset(s: number, x: number, y: number, color: number = drawState.penColor, bank: number = drawState.spriteBank) {
+    const offset = spriteSheetSize * drawState.spriteBank + s * spriteSize
+    spriteSheet[offset + y * 8 + x] = color
 }
 
 // Initialize
