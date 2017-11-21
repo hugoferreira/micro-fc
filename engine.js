@@ -116,6 +116,9 @@ function rectfill(x0, y0, x1, y1, color) {
         for (var x = x0; x <= x1; x += 1)
             pset(x, y, color);
 }
+function inrect(x, y, x0, y0, x1, y1) {
+    return (x >= x0 && x <= x1 && y >= y0 && y <= y1);
+}
 function cls(color) {
     if (color === void 0) { color = 0; }
     videomem.fill(color);

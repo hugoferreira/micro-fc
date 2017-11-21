@@ -11,34 +11,63 @@ function init() {
     for (let r = 0; r < 4; r += 1)
         for (let c = 0; c < 4; c += 1)
             swatches.push({
-                x: x0 + c * sw,
-                y: y0 + r * sh,
+                x0: x0 + c * sw,
+                y0: y0 + r * sh,
                 x1: x0 + c * sw + sw - 1,
                 y1: y0 + r * sh + sh - 1,
                 color: r * 4 + c
             })
 }
 
-function inbound(x, y, x0, y0, x1, y1) {
-    return (x >= x0 && x <= x1 && y >= y0 && y <= y1)
+const sprite = Array(64).fill(0).map(_ => rnd(10))
+
+function drawSprite(x0, y0) {
+    for (let p = 0; p < sprite.length; p += 1) {
+        const x = (p % 8) * 8 + x0
+        const y = (Math.floor(p / 8)) * 8 + y0
+        rectfill(x, y, x + 7, y + 7, sprite[p])
+    }
 }
 
-function drawPalette() {
-    swatches.forEach(s => rectfill(s.x, s.y, s.x1, s.y1, s.color))
+function gridMouse(x0, y0, width, height, hslices, vslices) {
+    return inrect(mouse.x, mouse.y, x0, y0, x0 + width, y0 + width) ? {
+        x: Math.max(Math.floor((mouse.x - x0) / (width / hslices)), 0),
+        y: Math.max(Math.floor((mouse.y - y0) / (height / vslices)), 0)
+    } : undefined
+}
+
+function onClickSpriteEditor(x0, y0) {
     if (mouse.click) {
-        const sw = swatches.find(s => inbound(mouse.x, mouse.y, s.x, s.y, s.x1, s.y1))
-        if (sw !== undefined) color = sw.color
+        const clickSpot = gridMouse(x0, y0, 64, 64, 8, 8)
+        if (clickSpot !== undefined)
+            sprite[clickSpot.y * 8 + clickSpot.x] = color
     }
+}
+function drawPalette() {
+    swatches.forEach(s =>
+        rectfill(s.x0, s.y0, s.x1, s.y1, s.color)
+    )
 
     const sel = swatches.find(s => s.color == color)
-    rect(sel.x, sel.y, sel.x1, sel.y1, 0)
-    rect(sel.x - 1, sel.y - 1, sel.x1 + 1, sel.y1 + 1, 7)
+    rect(sel.x0, sel.y0, sel.x1, sel.y1, 0)
+    rect(sel.x0 - 1, sel.y0 - 1, sel.x1 + 1, sel.y1 + 1, 7)
+}
+
+function onPaletteClick() {
+    if (mouse.click) {
+        const sw = swatches.find(s => inrect(mouse.x, mouse.y, s.x0, s.y0, s.x1, s.y1))
+        if (sw !== undefined) color = sw.color
+    }
 }
 
 function update() {
     cls()
     rectfill(0, 0, 127, 7, 8)
-    print("Mouse: " + mouse.x + ", " + mouse.y + " (" + (mouse.click?"1":"0") + ")", 1, 1, 7)
+    pen(7)
+    print(`Mouse: ${mouse.x}, ${mouse.y} ${mouse.click?'*':''}`, 1, 1)
     drawPalette()
-    print("Color: " + color, 0, 64, 7)
+    drawSprite(64, 9)
+    onPaletteClick()
+    onClickSpriteEditor(64, 9)
+    print(`Color: ${color}`, 0, 64)
 }

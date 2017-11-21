@@ -17,6 +17,7 @@ const videomem = Array(width * height).fill(0)
 const spritesheet = Array(width * height).fill(0)
 
 const btnstate = Array(6).fill(0)
+
 const mouse = { x: 0, y: 0, click: false }
 
 const palette = [
@@ -42,6 +43,7 @@ function eventLoop() {
     if (drawState.borderChanged) refreshBorder()
     refresh()
 }
+
 
 function refreshBorder() {
     const borderRGB = palette[drawState.borderColor]
@@ -133,6 +135,10 @@ function rectfill(x0: number, y0: number, x1: number, y1: number, color?: number
     for (let y = y0; y <= y1; y += 1)
         for (let x = x0; x <= x1; x += 1)
             pset(x, y, color)
+}
+
+function inrect(x, y, x0, y0, x1, y1) {
+    return (x >= x0 && x <= x1 && y >= y0 && y <= y1)
 }
 
 function cls(color: number = 0) {
