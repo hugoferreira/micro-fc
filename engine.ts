@@ -138,11 +138,11 @@ function rectfill(x0: number, y0: number, x1: number, y1: number, color?: number
             pset(x, y, color)
 }
 
-function inrect(x, y, x0, y0, x1, y1) {
+function inrect(x: number, y: number, x0: number, y0: number, x1: number, y1: number) {
     return (x >= x0 && x <= x1 && y >= y0 && y <= y1)
 }
 
-function posgrid(x, y, x0, y0, width, height, hslices, vslices) {
+function posgrid(x: number, y: number, x0: number, y0: number, width: number, height: number, hslices: number, vslices: number) {
     return inrect(x, y, x0, y0, x0 + width, y0 + width) ? {
         x: clamp(Math.floor((mouse.x - x0) / (width / hslices)), hslices - 1, 0),
         y: clamp(Math.floor((mouse.y - y0) / (height / vslices)), vslices - 1, 0)
