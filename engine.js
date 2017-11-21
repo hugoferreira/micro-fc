@@ -187,6 +187,13 @@ function sset(s, x, y, color, bank) {
     var offset = spriteSheetSize * drawState.spriteBank + s * spriteSize;
     spriteSheet[offset + y * 8 + x] = color;
 }
+function gridClick(x0, y0, x1, y1, hslices, vslices, callback) {
+    if (mouse.click) {
+        var clickSpot = posgrid(mouse.x, mouse.y, x0, y0, x1, y1, hslices, vslices);
+        if (clickSpot !== undefined)
+            callback(clickSpot.y, clickSpot.x);
+    }
+}
 // Initialize
 window.onload = function () {
     canvas.addEventListener('mousemove', function (evt) {

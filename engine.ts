@@ -204,6 +204,13 @@ function sset(s: number, x: number, y: number, color: number = drawState.penColo
     spriteSheet[offset + y * 8 + x] = color
 }
 
+function gridClick(x0, y0, x1, y1, hslices, vslices, callback: (r, c) => void) {
+    if (mouse.click) {
+        const clickSpot = posgrid(mouse.x, mouse.y, x0, y0, x1, y1, hslices, vslices)
+        if (clickSpot !== undefined) callback(clickSpot.y, clickSpot.x)
+    }
+}
+
 // Initialize
 
 window.onload = () => {
