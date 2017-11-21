@@ -1,11 +1,11 @@
 const fps = 30
 const width = 128
 const height = 128
-const screenWidth = 512
-const screenHeight = 512
+const screenWidth = 384
+const screenHeight = 384
 const xScale = screenWidth / width
 const yScale = screenHeight / height
-const borderSize = 32
+const borderSize = 48
 
 const canvas = <HTMLCanvasElement> document.getElementById('myCanvas')
 const ctx = canvas.getContext('2d')
@@ -21,7 +21,7 @@ const palette = [
     [0, 0, 0], [29, 43, 83], [126, 37, 83], [0, 135, 81],
     [171, 82, 54], [95, 87, 79], [194, 195, 199], [255, 241, 232],
     [255, 0, 77], [255, 163, 0], [255, 236, 39], [0, 228, 54],
-    [41, 173, 255], [131, 118, 156], [255, 119, 158], [255, 204, 170]
+    [41, 173, 255], [131, 118, 156], [255, 119, 168], [255, 204, 170]
 ]
 
 const drawState = {
@@ -42,7 +42,7 @@ function eventLoop() {
 function refresh() {
     for (let y = 0; y < screenWidth; y += 1) {
         for (let x = 0; x < screenHeight; x += 1) {
-            const i1 = (Math.floor(y / 4) * width + Math.floor(x / 4))
+            const i1 = (Math.floor(y / yScale) * width + Math.floor(x / xScale))
             const i2 = (y * screenWidth + x) * 4
             const color = palette[videomem[i1]]
 
@@ -77,6 +77,10 @@ function drawChar(x0: number, y0: number, symbol: number, pen?: number, paper?: 
 }
 
 // API
+function clamp(value: number, max = 255, min = 0) {
+    return (value > max) ? max : ((value < min) ? min : value)
+}
+
 function peek(addr: number) {
     return videomem[addr]
 }
@@ -90,7 +94,8 @@ function rnd(n: number) {
 }
 
 function pset(x: number, y: number, color?: number) {
-    videomem[y * width + x] = (color !== undefined ? color : drawState.penColor)
+    if (x >= 0 && x < width && y >= 0 && y < height)
+        videomem[y * width + x] = (color !== undefined ? color : drawState.penColor)
 }
 
 function pget(x: number, y: number) {

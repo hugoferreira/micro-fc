@@ -1,11 +1,11 @@
 var fps = 30;
 var width = 128;
 var height = 128;
-var screenWidth = 512;
-var screenHeight = 512;
+var screenWidth = 384;
+var screenHeight = 384;
 var xScale = screenWidth / width;
 var yScale = screenHeight / height;
-var borderSize = 32;
+var borderSize = 48;
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
 var image = ctx.createImageData(screenWidth, screenHeight);
@@ -18,7 +18,7 @@ var palette = [
     [0, 0, 0], [29, 43, 83], [126, 37, 83], [0, 135, 81],
     [171, 82, 54], [95, 87, 79], [194, 195, 199], [255, 241, 232],
     [255, 0, 77], [255, 163, 0], [255, 236, 39], [0, 228, 54],
-    [41, 173, 255], [131, 118, 156], [255, 119, 158], [255, 204, 170]
+    [41, 173, 255], [131, 118, 156], [255, 119, 168], [255, 204, 170]
 ];
 var drawState = {
     borderColor: 0,
@@ -37,7 +37,7 @@ function eventLoop() {
 function refresh() {
     for (var y = 0; y < screenWidth; y += 1) {
         for (var x = 0; x < screenHeight; x += 1) {
-            var i1 = (Math.floor(y / 4) * width + Math.floor(x / 4));
+            var i1 = (Math.floor(y / yScale) * width + Math.floor(x / xScale));
             var i2 = (y * screenWidth + x) * 4;
             var color = palette[videomem[i1]];
             texture[i2 + 0] = color[0];
@@ -67,6 +67,11 @@ function drawChar(x0, y0, symbol, pen, paper) {
         }
 }
 // API
+function clamp(value, max, min) {
+    if (max === void 0) { max = 255; }
+    if (min === void 0) { min = 0; }
+    return (value > max) ? max : ((value < min) ? min : value);
+}
 function peek(addr) {
     return videomem[addr];
 }
@@ -77,7 +82,8 @@ function rnd(n) {
     return Math.floor(Math.random() * (Math.floor(n) + 1));
 }
 function pset(x, y, color) {
-    videomem[y * width + x] = (color !== undefined ? color : drawState.penColor);
+    if (x >= 0 && x < width && y >= 0 && y < height)
+        videomem[y * width + x] = (color !== undefined ? color : drawState.penColor);
 }
 function pget(x, y) {
     return videomem[y * width + x];
