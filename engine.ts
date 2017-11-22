@@ -35,7 +35,7 @@ const drawState = {
     penColor: 7,
     spriteBank: 1,
     borderChanged: true,
-    clipArea: { x0: 0, y0: 0, x1: width, y1: height }
+    clipArea: { x0: 0, y0: 0, x1: width - 1, y1: height - 1 }
 }
 
 let init: () => void
@@ -145,7 +145,7 @@ function inrect(x: number, y: number, x0: number, y0: number, x1: number, y1: nu
     return (x >= x0 && x <= x1 && y >= y0 && y <= y1)
 }
 
-function clip(x0 = 0, y0 = 0, x1 = width, y1 = height) {
+function clip(x0 = 0, y0 = 0, x1 = width - 1, y1 = height - 1) {
     drawState.clipArea = { x0, y0, x1, y1 }
 }
 

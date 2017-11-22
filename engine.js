@@ -29,7 +29,7 @@ var drawState = {
     penColor: 7,
     spriteBank: 1,
     borderChanged: true,
-    clipArea: { x0: 0, y0: 0, x1: width, y1: height }
+    clipArea: { x0: 0, y0: 0, x1: width - 1, y1: height - 1 }
 };
 var init;
 var update;
@@ -129,8 +129,8 @@ function inrect(x, y, x0, y0, x1, y1) {
 function clip(x0, y0, x1, y1) {
     if (x0 === void 0) { x0 = 0; }
     if (y0 === void 0) { y0 = 0; }
-    if (x1 === void 0) { x1 = width; }
-    if (y1 === void 0) { y1 = height; }
+    if (x1 === void 0) { x1 = width - 1; }
+    if (y1 === void 0) { y1 = height - 1; }
     drawState.clipArea = { x0: x0, y0: y0, x1: x1, y1: y1 };
 }
 function posgrid(x, y, x0, y0, width, height, hslices, vslices) {
