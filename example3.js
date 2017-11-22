@@ -51,11 +51,7 @@ function doSpriteSheet(x, y, cols=16, rows=4) {
     rect(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 7)
     rect(x0 - 2, y0 - 2, x1 + 2, y1 + 2, 0)
 
-    clkgrid(x, y, 127, 24, cols, rows, (r, c) => sprite = r * cols + c)
-}
-
-function doToolTip(x, y) {
-   print(tooltip, x, y)
+    clkgrid(x, y, 127, rows*8, cols, rows, (r, c) => sprite = r * cols + c)
 }
 
 function update() {
@@ -63,11 +59,10 @@ function update() {
     cls()
     rectfill(0, 0, 127, 7, 8)
     rectfill(0, 127 - 6, 127, 127, 8)
-    rectfill(0, 8, 127, 82, 15)
-    pen(7)
-    print('Sprite Editor', 1, 1)
+    rectfill(0, 8, 127, 82, 5)
+    print('Sprite Editor', 1, 1, 15)
     doPalette(5, 13)
     doSpriteCanvas(59, 13)
     doSpriteSheet(0, 85)
-    doToolTip(1, 127-5)
+    print(tooltip, 1, 127-5, 2)
 }
