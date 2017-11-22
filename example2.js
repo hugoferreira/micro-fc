@@ -1,8 +1,6 @@
-var x = 64, y = 30, frame = 0
+var x = 64, y = 30
 
 function update() {
-    frame += 1
-
     /* for (let i = 0; i < 128*128; i += 1)
         poke(i, (i + frame) % 16) */
 
