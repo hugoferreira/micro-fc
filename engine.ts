@@ -41,8 +41,10 @@ const drawState = {
 let init: () => void
 let update: () => void
 let draw: () => void
+let frame = 0
 
 function eventLoop() {
+    frame += 1
     if (update !== undefined) update()
     if (draw !== undefined) draw()
     if (drawState.borderChanged) refreshBorder()
@@ -88,6 +90,25 @@ function drawChar(x0: number, y0: number, symbol: number, pen?: number, paper?: 
             if (bit !== 0) pset(x + x0, y + y0, pen)
             else if (paper !== undefined) pset(x + x0, y + y0, paper)
         }
+}
+
+// Sprites
+
+function encodeSprite(s: number, bank: number = drawState.spriteBank) {
+    const result = []
+    for (let y = 0; y < 8; y += 1) {
+        let value = 0x00000000
+        for (let x = 7; x >= 0; x -= 1)
+            value |= sget(s, x, y, bank) << (28 - x * 4)
+        result.push(value)
+    }
+    return result
+}
+
+function decodeSprite(code: number[], s: number, bank: number = drawState.spriteBank) {
+    for (let y = 0; y < 8; y += 1)
+        for (let x = 7; x >= 0; x -= 1)
+            sset(s, x, y, (code[y] >> (28 - x * 4)) & 0xF, bank)
 }
 
 // API
@@ -198,8 +219,13 @@ function spr(s: number, x0: number, y0: number, scale = 1, transparentColor = 0,
 }
 
 function sset(s: number, x: number, y: number, color: number = drawState.penColor, bank: number = drawState.spriteBank) {
-    const offset = spriteSheetSize * drawState.spriteBank + s * spriteSize
+    const offset = spriteSheetSize * bank + s * spriteSize
     spriteSheet[offset + y * 8 + x] = color
+}
+
+function sget(s: number, x: number, y: number, bank: number = drawState.spriteBank) {
+    const offset = spriteSheetSize * bank + s * spriteSize
+    return spriteSheet[offset + y * 8 + x]
 }
 
 function clkgrid(x0: number, y0: number, width: number, height: number, hslices: number, vslices: number, callback: (r, c) => void) {

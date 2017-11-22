@@ -34,7 +34,9 @@ var drawState = {
 var init;
 var update;
 var draw;
+var frame = 0;
 function eventLoop() {
+    frame += 1;
     if (update !== undefined)
         update();
     if (draw !== undefined)
@@ -77,6 +79,24 @@ function drawChar(x0, y0, symbol, pen, paper) {
             else if (paper !== undefined)
                 pset(x + x0, y + y0, paper);
         }
+}
+// Sprites
+function encodeSprite(s, bank) {
+    if (bank === void 0) { bank = drawState.spriteBank; }
+    var result = [];
+    for (var y = 0; y < 8; y += 1) {
+        var value = 0x00000000;
+        for (var x = 7; x >= 0; x -= 1)
+            value |= sget(s, x, y, bank) << (28 - x * 4);
+        result.push(value);
+    }
+    return result;
+}
+function decodeSprite(code, s, bank) {
+    if (bank === void 0) { bank = drawState.spriteBank; }
+    for (var y = 0; y < 8; y += 1)
+        for (var x = 7; x >= 0; x -= 1)
+            sset(s, x, y, (code[y] >> (28 - x * 4)) & 0xF, bank);
 }
 // API
 function clamp(value, max, min) {
@@ -184,8 +204,13 @@ function spr(s, x0, y0, scale, transparentColor, bank) {
 function sset(s, x, y, color, bank) {
     if (color === void 0) { color = drawState.penColor; }
     if (bank === void 0) { bank = drawState.spriteBank; }
-    var offset = spriteSheetSize * drawState.spriteBank + s * spriteSize;
+    var offset = spriteSheetSize * bank + s * spriteSize;
     spriteSheet[offset + y * 8 + x] = color;
+}
+function sget(s, x, y, bank) {
+    if (bank === void 0) { bank = drawState.spriteBank; }
+    var offset = spriteSheetSize * bank + s * spriteSize;
+    return spriteSheet[offset + y * 8 + x];
 }
 function clkgrid(x0, y0, width, height, hslices, vslices, callback) {
     if (mouse.click) {
