@@ -49,7 +49,6 @@ function eventLoop() {
     refresh()
 }
 
-
 function refreshBorder() {
     const borderRGB = palette[drawState.borderColor]
     ctx.fillStyle = `rgb(${borderRGB[0]}, ${borderRGB[1]}, ${borderRGB[2]})`
@@ -157,7 +156,6 @@ function posgrid(x: number, y: number, x0: number, y0: number, width: number, he
     } : undefined
 }
 
-
 function cls(color: number = 0) {
     videomem.fill(color)
 }
@@ -204,9 +202,9 @@ function sset(s: number, x: number, y: number, color: number = drawState.penColo
     spriteSheet[offset + y * 8 + x] = color
 }
 
-function gridClick(x0, y0, x1, y1, hslices, vslices, callback: (r, c) => void) {
+function clkgrid(x0: number, y0: number, width: number, height: number, hslices: number, vslices: number, callback: (r, c) => void) {
     if (mouse.click) {
-        const clickSpot = posgrid(mouse.x, mouse.y, x0, y0, x1, y1, hslices, vslices)
+        const clickSpot = posgrid(mouse.x, mouse.y, x0, y0, width, height, hslices, vslices)
         if (clickSpot !== undefined) callback(clickSpot.y, clickSpot.x)
     }
 }
