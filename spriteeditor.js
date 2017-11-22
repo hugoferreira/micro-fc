@@ -3,19 +3,14 @@ let sprite = 0
 let tooltip = ''
 
 function init() {
-    bank(0)
-    for (let r = 0; r < 4; r += 1)
-        for (let c = 0; c < 4; c += 1)
-            sset(0, c, r, r * 4 + c)
-    bank(1)
+    decodeSprite([0x00112233, 0x00112233, 0x44556677, 0x44556677,
+                  0x8899AABB, 0x8899AABB, 0xCCDDEEFF, 0xCCDDEEFF], 0, 0)
 }
 
 function doPalette(x, y) {
     rect(x - 1, y - 1, 32 + x, 32 + y, 0)
 
-    clip(x, y, x + 31, y + 31)
-    spr(0, x, y, 8, 16, 0)
-    clip()
+    spr(0, x, y, 4, 16, 0)
 
     const x0 = (color % 4) * 8 + x
     const y0 = Math.floor(color / 4) * 8 + y
@@ -58,11 +53,16 @@ function update() {
     tooltip = ''
     cls()
     rectfill(0, 0, 127, 7, 8)
-    rectfill(0, 127 - 6, 127, 127, 8)
-    rectfill(0, 8, 127, 82, 5)
     print('Sprite Editor', 1, 1, 15)
+
+    rectfill(0, 8, 127, 82, 5)
     doPalette(5, 13)
     doSpriteCanvas(59, 13)
     doSpriteSheet(0, 85)
+
+    rectfill(4, 49, 37, 55, 1)
+    print(sprite.toString().padStart(3, '0'), 19, 50, 15, 1)
+
+    rectfill(0, 127 - 6, 127, 127, 8)
     print(tooltip, 1, 127-5, 2)
 }
