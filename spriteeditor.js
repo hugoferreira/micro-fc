@@ -9,7 +9,6 @@ function init() {
 
 function doPalette(x, y) {
     rect(x - 1, y - 1, 32 + x, 32 + y, 0)
-
     spr(0, x, y, 4, 16, 0)
 
     const x0 = (color % 4) * 8 + x
@@ -18,7 +17,7 @@ function doPalette(x, y) {
     const y1 = y0 + 7
 
     rect(x0, y0, x1, y1, 0)
-    rect(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 7)
+    rect(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 15)
 
     clkgrid(x, y, 32, 32, 4, 4, (r, c) => color = r * 4 + c)
 }
@@ -43,7 +42,7 @@ function doSpriteSheet(x, y, cols=16, rows=4) {
     const x1 = x0 + 7
     const y1 = y0 + 7
 
-    rect(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 7)
+    rect(x0 - 1, y0 - 1, x1 + 1, y1 + 1, 15)
     rect(x0 - 2, y0 - 2, x1 + 2, y1 + 2, 0)
 
     clkgrid(x, y, 127, rows*8, cols, rows, (r, c) => sprite = r * cols + c)
@@ -52,7 +51,7 @@ function doSpriteSheet(x, y, cols=16, rows=4) {
 function update() {
     tooltip = ''
     cls()
-    rectfill(0, 0, 127, 7, 8)
+    rectfill(0, 0, 127, 7, 12)
     print('Sprite Editor', 1, 1, 15)
 
     rectfill(0, 8, 127, 82, 5)
@@ -63,6 +62,6 @@ function update() {
     rectfill(4, 49, 37, 55, 1)
     print(sprite.toString().padStart(3, '0'), 19, 50, 15, 1)
 
-    rectfill(0, 127 - 6, 127, 127, 8)
-    print(tooltip, 1, 127-5, 2)
+    rectfill(0, 127 - 6, 127, 127, 12)
+    print(tooltip, 1, 127-5, 4)
 }

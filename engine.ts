@@ -23,12 +23,7 @@ const btnstate = Array(6).fill(0)
 
 const mouse = { x: 0, y: 0, click: false }
 
-const palette = [
-    [0, 0, 0], [29, 43, 83], [126, 37, 83], [0, 135, 81],
-    [171, 82, 54], [95, 87, 79], [194, 195, 199], [255, 241, 232],
-    [255, 0, 77], [255, 163, 0], [255, 236, 39], [0, 228, 54],
-    [41, 173, 255], [131, 118, 156], [255, 119, 168], [255, 204, 170]
-]
+let palette = []
 
 const drawState = {
     borderColor: 0,
@@ -38,15 +33,12 @@ const drawState = {
     clipArea: { x0: 0, y0: 0, x1: width - 1, y1: height - 1 }
 }
 
-let init: () => void
-let update: () => void
-let draw: () => void
 let frame = 0
 
 function eventLoop() {
     frame += 1
-    if (update !== undefined) update()
-    if (draw !== undefined) draw()
+    if (window.update !== undefined) update()
+    if (window.draw !== undefined) draw()
     if (drawState.borderChanged) refreshBorder()
     refresh()
 }
@@ -235,6 +227,10 @@ function clkgrid(x0: number, y0: number, width: number, height: number, hslices:
     }
 }
 
+function setpal(values: number[]) {
+    palette = values.map(v => [(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF])
+}
+
 // Initialize
 
 window.onload = () => {
@@ -260,6 +256,11 @@ window.onload = () => {
         else if (e.key === 'ArrowUp') btnstate[2] = false
         else if (e.key === 'ArrowDown') btnstate[3] = false
     }, true)
+
+    setpal([0x000000, 0x143563, 0x386C9C, 0x118840,
+            0x60305F, 0x505050, 0x60E0FF, 0x14E01F,
+            0x9D4040, 0xFF8ABF, 0xACACAC, 0xFFF210,
+            0xED1D25, 0xFF903C, 0xFFCCBC, 0xFFFFFF])
 
     if (init !== undefined) init()
     window.setInterval(() => eventLoop(), 1000 / fps)
