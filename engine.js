@@ -7,16 +7,17 @@ const xScale = screenWidth / width;
 const yScale = screenHeight / height;
 const borderSize = 48;
 const spriteSize = 64;
-const spriteSheetSize = 128 * spriteSize;
+const spritesPerSheet = 128;
+const spriteSheetSize = spritesPerSheet * spriteSize;
 const spriteBanks = 8;
 const canvas = document.getElementById('myCanvas');
 // canvas.style.cursor = 'none' // TODO: Implement software cursor
 const ctx = canvas.getContext('2d');
 const image = ctx.createImageData(screenWidth, screenHeight);
 const texture = image.data.fill(255);
-const videomem = Array(width * height).fill(0);
-const spriteSheet = Array(spriteSheetSize * spriteBanks).fill(0);
-const btnstate = Array(6).fill(0);
+const videomem = new Uint8Array(width * height);
+const spriteSheet = new Uint8Array(spriteSheetSize * spriteBanks);
+const btnstate = new Uint8Array(6);
 const mouse = { x: 0, y: 0, click: false };
 let palette = [];
 const drawState = {
@@ -24,7 +25,7 @@ const drawState = {
     penColor: 7,
     spriteBank: 1,
     borderChanged: true,
-    drawPalette: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    drawPalette: new Uint8Array(15),
     clipArea: { x0: 0, y0: 0, x1: width - 1, y1: height - 1 }
 };
 let frame = 0;
@@ -45,14 +46,12 @@ function refreshBorder() {
     drawState.borderChanged = false;
 }
 function refresh() {
+    let i = 0;
     for (let y = 0; y < screenWidth; y += 1) {
+        const ys = Math.floor(y / yScale) * width;
         for (let x = 0; x < screenHeight; x += 1) {
-            const i1 = (Math.floor(y / yScale) * width + Math.floor(x / xScale));
-            const i2 = (y * screenWidth + x) * 4;
-            const color = palette[videomem[i1]];
-            texture[i2 + 0] = color[0];
-            texture[i2 + 1] = color[1];
-            texture[i2 + 2] = color[2];
+            texture.set(palette[videomem[ys + Math.floor(x / xScale)]], i);
+            i += 4;
         }
     }
     ctx.putImageData(image, borderSize, borderSize);
@@ -75,14 +74,20 @@ function drawChar(x0, y0, symbol, pen, paper) {
 }
 // Sprites
 function encodeSprite(s, bank = drawState.spriteBank) {
-    const result = [];
+    const result = new Uint32Array(8);
     for (let y = 0; y < 8; y += 1) {
         let value = 0x00000000;
         for (let x = 7; x >= 0; x -= 1)
             value |= sget(s, x, y, bank) << (28 - x * 4);
-        result.push(value);
+        result[y] = value;
     }
     return result;
+}
+function encodeBank(bank = drawState.spriteBank) {
+    const result = new Uint32Array(spriteSheetSize);
+    for (let i = 0; i < spritesPerSheet; i += 1)
+        result.set(encodeSprite(i, bank), i * spriteSize);
+    return result.join(',');
 }
 function decodeSprite(code, s, bank = drawState.spriteBank) {
     for (let y = 0; y < 8; y += 1)
@@ -196,13 +201,13 @@ function clkgrid(x0, y0, width, height, hslices, vslices, callback) {
     }
 }
 function setpal(values) {
-    palette = values.map(v => [(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF]);
+    palette = values.map(v => new Uint8Array([(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF]));
 }
 function pal(src, dst) {
     if (src !== undefined && dst !== undefined)
         drawState.drawPalette[src] = dst;
     else
-        drawState.drawPalette = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        drawState.drawPalette = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 }
 // Initialize
 window.onload = () => {
@@ -215,24 +220,25 @@ window.onload = () => {
     canvas.addEventListener('mouseup', () => { mouse.click = false; }, false);
     window.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft')
-            btnstate[0] = true;
+            btnstate[0] = 1;
         else if (e.key === 'ArrowRight')
-            btnstate[1] = true;
+            btnstate[1] = 1;
         else if (e.key === 'ArrowUp')
-            btnstate[2] = true;
+            btnstate[2] = 1;
         else if (e.key === 'ArrowDown')
-            btnstate[3] = true;
+            btnstate[3] = 1;
     }, true);
     window.addEventListener('keyup', (e) => {
         if (e.key === 'ArrowLeft')
-            btnstate[0] = false;
+            btnstate[0] = 0;
         else if (e.key === 'ArrowRight')
-            btnstate[1] = false;
+            btnstate[1] = 0;
         else if (e.key === 'ArrowUp')
-            btnstate[2] = false;
+            btnstate[2] = 0;
         else if (e.key === 'ArrowDown')
-            btnstate[3] = false;
+            btnstate[3] = 0;
     }, true);
+    pal();
     setpal([0x000000, 0x143563, 0x386C9C, 0x118840,
         0x60305F, 0x505050, 0x60E0FF, 0x14E01F,
         0x9D4040, 0xFF8ABF, 0xACACAC, 0xFFF210,
