@@ -1,4 +1,4 @@
-const fps = 30
+const fps = 60
 const width = 128
 const height = 128
 const screenWidth = 384
@@ -25,7 +25,7 @@ const videomem = new Uint8Array(width * height)
 const spriteSheet = new Uint8Array(spriteSheetSize * spriteBanks)
 
 const btnstate = new Uint8Array(6)
-const mouse = { x: 0, y: 0, click: false }
+const mouse = { x: 0, y: 0, down: false, click: false }
 
 let palette = []
 
@@ -43,9 +43,8 @@ let frame = 0
 function eventLoop() {
     frame += 1
     if (window.update !== undefined) update()
-    if (window.draw !== undefined) draw()
     if (drawState.borderChanged) refreshBorder()
-    refresh()
+    mouse.click = false
 }
 
 function refreshBorder() {
@@ -56,6 +55,9 @@ function refreshBorder() {
 }
 
 function refresh() {
+    requestAnimationFrame(refresh)
+    if (window.draw !== undefined) draw()
+
     for (let i = 0, j = 0; i < videomem.length; i += 1, j += 4)
         texture.set(palette[videomem[i]], j)
 
@@ -226,8 +228,8 @@ function sget(s: number, x: number, y: number, bank: number = drawState.spriteBa
     return spriteSheet[offset + y * 8 + x]
 }
 
-function clkgrid(x0: number, y0: number, width: number, height: number, hslices: number, vslices: number, callback: (r, c) => void) {
-    if (mouse.click) {
+function clkgrid(x0: number, y0: number, width: number, height: number, hslices: number, vslices: number, callback: (r, c) => void, mouseevt = 'down') {
+    if (mouse[mouseevt]) {
         const clickSpot = posgrid(mouse.x, mouse.y, x0, y0, width, height, hslices, vslices)
         if (clickSpot !== undefined) callback(clickSpot.y, clickSpot.x)
     }
@@ -253,8 +255,9 @@ window.onload = () => {
         mouse.y = clamp(Math.floor((evt.clientY - rect.top - borderSize) / yScale), height - 1, 0)
     }, false)
 
-    canvas.addEventListener('mousedown', () => { mouse.click = true }, false)
-    canvas.addEventListener('mouseup', () => { mouse.click = false }, false)
+    canvas.addEventListener('mousedown', () => { mouse.down = true }, false)
+    canvas.addEventListener('mouseup', () => { mouse.down = false }, false)
+    canvas.addEventListener('click', () => { mouse.click = true }, false)
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft') btnstate[0] = 1
@@ -276,6 +279,7 @@ window.onload = () => {
             0x9D4040, 0xFF8ABF, 0xACACAC, 0xFFF210,
             0xED1D25, 0xFF903C, 0xFFCCBC, 0xFFFFFF])
 
-    if (init !== undefined) init()
+    if (window.init !== undefined) init()
     window.setInterval(() => eventLoop(), 1000 / fps)
+    refresh()
 }
