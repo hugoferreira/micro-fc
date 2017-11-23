@@ -24,6 +24,7 @@ const drawState = {
     penColor: 7,
     spriteBank: 1,
     borderChanged: true,
+    drawPalette: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     clipArea: { x0: 0, y0: 0, x1: width - 1, y1: height - 1 }
 };
 let frame = 0;
@@ -104,7 +105,7 @@ function rnd(n) {
 function pset(x, y, color = drawState.penColor) {
     const c = drawState.clipArea;
     if (inrect(x, y, c.x0, c.y0, c.x1, c.y1))
-        videomem[y * width + x] = color;
+        videomem[y * width + x] = drawState.drawPalette[color];
 }
 function pget(x, y) {
     return videomem[y * width + x];
@@ -196,6 +197,12 @@ function clkgrid(x0, y0, width, height, hslices, vslices, callback) {
 }
 function setpal(values) {
     palette = values.map(v => [(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF]);
+}
+function pal(src, dst) {
+    if (src !== undefined && dst !== undefined)
+        drawState.drawPalette[src] = dst;
+    else
+        drawState.drawPalette = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 }
 // Initialize
 window.onload = () => {
