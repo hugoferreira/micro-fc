@@ -12,10 +12,14 @@ const spriteSheetSize = spritesPerSheet * spriteSize
 const spriteBanks = 8
 
 const canvas = <HTMLCanvasElement> document.getElementById('myCanvas')
-// canvas.style.cursor = 'none' // TODO: Implement software cursor
+const buffer = (<HTMLCanvasElement>document.getElementById('buffer')).getContext('2d')
 
+// canvas.style.cursor = 'none' // TODO: Implement software cursor
 const ctx = canvas.getContext('2d')
-const image = ctx.createImageData(screenWidth, screenHeight)
+ctx.scale(xScale, yScale)
+ctx.imageSmoothingEnabled = false
+
+const image = buffer.createImageData(width, height)
 const texture = image.data.fill(255)
 const videomem = new Uint8Array(width * height)
 const spriteSheet = new Uint8Array(spriteSheetSize * spriteBanks)
@@ -52,16 +56,11 @@ function refreshBorder() {
 }
 
 function refresh() {
-    let i = 0
-    for (let y = 0; y < screenWidth; y += 1) {
-        const ys = Math.floor(y / yScale) * width
-        for (let x = 0; x < screenHeight; x += 1) {
-            texture.set(palette[videomem[ys + Math.floor(x / xScale)]], i)
-            i += 4
-        }
-    }
+    for (let i = 0, j = 0; i < videomem.length; i += 1, j += 4)
+        texture.set(palette[videomem[i]], j)
 
-    ctx.putImageData(image, borderSize, borderSize)
+    buffer.putImageData(image, 0, 0)
+    ctx.drawImage(buffer.canvas, borderSize / xScale, borderSize / yScale)
 }
 
 // Text
