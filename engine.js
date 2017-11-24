@@ -135,10 +135,12 @@ function rect(x0, y0, x1, y1, color) {
     line(x1, y1, x0, y1, color);
     line(x0, y1, x0, y0, color);
 }
-function rectfill(x0, y0, x1, y1, color) {
-    for (let y = y0; y <= y1; y += 1)
-        for (let x = x0; x <= x1; x += 1)
-            pset(x, y, color);
+function unsaferectfill(x0, y0, x1, y1, color) {
+    for (let y = y0 * width; y <= y1 * width; y += width)
+        videomem.fill(color, y + x0, y + x1 + 1);
+}
+function rectfill(x0, y0, x1, y1, color = drawState.penColor) {
+    unsaferectfill(Math.max(drawState.clipArea.x0, x0), Math.max(drawState.clipArea.y0, y0), Math.min(drawState.clipArea.x1, x1), Math.min(drawState.clipArea.y1, y1), drawState.drawPalette[color]);
 }
 function inrect(x, y, x0, y0, x1, y1) {
     return (x >= x0 && x <= x1 && y >= y0 && y <= y1);
