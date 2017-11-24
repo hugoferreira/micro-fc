@@ -10,26 +10,31 @@ const spriteSize = 64
 const spritesPerSheet = 128
 const spriteSheetSize = spritesPerSheet * spriteSize
 const spriteBanks = 8
+const videomemLength = width * height
+const spriteBanksLength = spriteSheetSize * spriteBanks
 
-const  canvas = <HTMLCanvasElement> document.getElementById('myCanvas')
+const scanvas = <HTMLCanvasElement> document.getElementById('myCanvas')
 const bcanvas = <HTMLCanvasElement> document.createElement('canvas')
 bcanvas.width = width
 bcanvas.height = height
 
-const buffer = bcanvas.getContext('2d')
-const ctx = canvas.getContext('2d')
-ctx.scale(xScale, yScale)
-ctx.imageSmoothingEnabled = false
+const bctx = bcanvas.getContext('2d')
+const sctx = scanvas.getContext('2d')
+sctx.scale(xScale, yScale)
+sctx.imageSmoothingEnabled = false
 
-const image = buffer.createImageData(width, height)
-const texture = image.data.fill(255)
-const videomem = new Uint8Array(width * height)
-const spriteSheet = new Uint8Array(spriteSheetSize * spriteBanks)
+const image = bctx.createImageData(width, height)
+const videobuffer = new DataView(image.data.buffer)
+
+const mem = new ArrayBuffer(videomemLength + spriteBanksLength)
+const videomem = new Uint8Array(mem, 0, videomemLength)
+const lastframe = new Uint8Array(videomemLength)
+const spriteSheet = new Uint8Array(mem, videomemLength, spriteBanksLength)
 
 const btnstate = new Uint8Array(6)
 const mouse = { x: 0, y: 0, down: false, click: false }
 
-let palette: Uint8Array[]
+let palette: Uint32Array
 
 const drawState = {
     borderColor: 0,
@@ -49,12 +54,10 @@ function eventLoop() {
 }
 
 function refreshBorder() {
-    ctx.fillStyle = `rgb(${palette[drawState.borderColor].join(',')})`
-    ctx.fillRect(0, 0, screenWidth + borderSize * 2, screenHeight + borderSize * 2)
+    sctx.fillStyle = `#${(palette[drawState.borderColor] >> 8).toString(16)}`
+    sctx.fillRect(0, 0, screenWidth, screenHeight)
     drawState.borderChanged = false
 }
-
-function indexToRGB(i) { return palette[i] }
 
 function refresh() {
     requestAnimationFrame(refresh)
@@ -63,10 +66,10 @@ function refresh() {
     if (drawState.borderChanged) refreshBorder()
 
     for (let i = 0, j = 0; i < videomem.length; i += 1, j += 4)
-        texture.set(palette[videomem[i]], j)
+        videobuffer.setUint32(j, palette[videomem[i]])
 
-    buffer.putImageData(image, 0, 0)
-    ctx.drawImage(buffer.canvas, borderSize / xScale, borderSize / yScale)
+    bctx.putImageData(image, 0, 0)
+    sctx.drawImage(bcanvas, borderSize / xScale, borderSize / yScale)
 }
 
 // Text
@@ -240,7 +243,7 @@ function clkgrid(x0: number, y0: number, width: number, height: number, hslices:
 }
 
 function setpal(values: number[]) {
-    palette = values.map(v => new Uint8Array([(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF]))
+    palette = new Uint32Array(values.map(v => (v << 8) | 0xFF))
 }
 
 function pal(src?: number, dst?: number) {
@@ -253,15 +256,15 @@ function pal(src?: number, dst?: number) {
 // Initialize
 
 window.onload = () => {
-    canvas.addEventListener('mousemove', (evt) => {
-        const rect = canvas.getBoundingClientRect()
+    scanvas.addEventListener('mousemove', (evt) => {
+        const rect = scanvas.getBoundingClientRect()
         mouse.x = clamp(Math.floor((evt.clientX - rect.left - borderSize) / xScale), width - 1, 0)
         mouse.y = clamp(Math.floor((evt.clientY - rect.top - borderSize) / yScale), height - 1, 0)
     }, false)
 
-    canvas.addEventListener('mousedown', () => { mouse.down = true }, false)
-    canvas.addEventListener('mouseup', () => { mouse.down = false }, false)
-    canvas.addEventListener('click', () => { mouse.click = true }, false)
+    scanvas.addEventListener('mousedown', () => { mouse.down = true }, false)
+    scanvas.addEventListener('mouseup', () => { mouse.down = false }, false)
+    scanvas.addEventListener('click', () => { mouse.click = true }, false)
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft') btnstate[0] = 1
