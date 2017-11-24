@@ -1,4 +1,4 @@
-const fps = 60;
+const fps = 30;
 const width = 128;
 const height = 128;
 const screenWidth = 384;
@@ -11,8 +11,10 @@ const spritesPerSheet = 128;
 const spriteSheetSize = spritesPerSheet * spriteSize;
 const spriteBanks = 8;
 const canvas = document.getElementById('myCanvas');
-const buffer = document.getElementById('buffer').getContext('2d');
-// canvas.style.cursor = 'none' // TODO: Implement software cursor
+const bcanvas = document.createElement('canvas');
+bcanvas.width = width;
+bcanvas.height = height;
+const buffer = bcanvas.getContext('2d');
 const ctx = canvas.getContext('2d');
 ctx.scale(xScale, yScale);
 ctx.imageSmoothingEnabled = false;
@@ -22,7 +24,7 @@ const videomem = new Uint8Array(width * height);
 const spriteSheet = new Uint8Array(spriteSheetSize * spriteBanks);
 const btnstate = new Uint8Array(6);
 const mouse = { x: 0, y: 0, down: false, click: false };
-let palette = [];
+let palette = new Uint8Array(16 * 3);
 const drawState = {
     borderColor: 0,
     penColor: 7,
@@ -36,8 +38,6 @@ function eventLoop() {
     frame += 1;
     if (window.update !== undefined)
         update();
-    if (drawState.borderChanged)
-        refreshBorder();
     mouse.click = false;
 }
 function refreshBorder() {
@@ -50,8 +50,10 @@ function refresh() {
     requestAnimationFrame(refresh);
     if (window.draw !== undefined)
         draw();
+    if (drawState.borderChanged)
+        refreshBorder();
     for (let i = 0, j = 0; i < videomem.length; i += 1, j += 4)
-        texture.set(palette[videomem[i]], j);
+        texture.set(palette.slice(videomem[i] * 3, videomem[i] * 3 + 3), j);
     buffer.putImageData(image, 0, 0);
     ctx.drawImage(buffer.canvas, borderSize / xScale, borderSize / yScale);
 }
@@ -200,7 +202,9 @@ function clkgrid(x0, y0, width, height, hslices, vslices, callback, mouseevt = '
     }
 }
 function setpal(values) {
-    palette = values.map(v => new Uint8Array([(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF]));
+    for (let i = 0, j = 0; i < values.length; i += 1, j += 3) {
+        palette.set([(values[i] >> 16) & 0xFF, (values[i] >> 8) & 0xFF, values[i] & 0xFF], j);
+    }
 }
 function pal(src, dst) {
     if (src !== undefined && dst !== undefined)

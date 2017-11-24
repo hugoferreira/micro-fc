@@ -1,9 +1,6 @@
 var x = 64, y = 30
 
 function update() {
-    /* for (let i = 0; i < 128*128; i += 1)
-        poke(i, (i + frame) % 16) */
-
     pen(7)
     print("Hello World!", 0, 0)
 
