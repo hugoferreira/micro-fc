@@ -21,14 +21,16 @@ function init() {
                 sset(symbol-32, x, y, bit?15:0, 1)
             }
     }
+
+    border(1)
 }
 
 function doPalette(x, y) {
     rect(x - 1, y - 1, 32 + x, 32 + y, 0)
     spr(0, x, y, 4, 16, 0)
 
-    const x0 = (color % 4) * 8 + x
-    const y0 = Math.floor(color / 4) * 8 + y
+    const x0 = (color % 4) << 3 + x
+    const y0 = ((color >> 2) << 3) + y
     const x1 = x0 + 7
     const y1 = y0 + 7
 
@@ -75,7 +77,6 @@ function doBitmask(x, y) {
 function draw() {
     tooltip = ''
     cls()
-    border(1)
     rectfill(0, 0, 127, 7, 12)
     print('Sprite Editor', 1, 1, 15)
 

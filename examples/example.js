@@ -1,22 +1,41 @@
-let x = 64, y = 30
+
 let xdir = 1
 let ydir = 1
 
+class Ball {
+    constructor(x, y, xdir, ydir) {
+        this.x = x
+        this.y = y
+        this.xdir = xdir
+        this.ydir = ydir
+    }
+
+    update() {
+        if (this.x >= 120 || this.x <= 0) this.xdir = -this.xdir
+        if (this.y >= 120 || this.y <= 0) this.ydir = -this.ydir
+
+        this.x += this.xdir
+        this.y += this.ydir
+    }
+
+    draw() {
+        spr(0, this.x, this.y, 1, 5)
+    }
+}
+
+let balls = []
+
 function init() {
+    decodeSprite([0x50005555, 0x0DDB0555, 0x0DDD0555, 0x0DDD0555, 0x50005555, 0x55555555, 0x55555555, 0x55555555], 0)
+    for (let i = 0; i < 512; i += 1)
+        balls.push(new Ball(rnd(120), rnd(120), rnd(6) - 3, rnd(6) - 3))
 }
 
 function update() {
-    if (x > 127) { beep(400); xdir = -1 }
-    else if (x == 0)  { beep(400); xdir = 1  }
-
-    if (y > 127) { beep(440); ydir = -2 }
-    else if (y == 0)  { beep(440); ydir = 2 }
-
-    x += xdir
-    y += ydir
+    balls.forEach(b => b.update())
 }
 
 function draw() {
     cls(1)
-    pset(x, y, 15)
+    balls.forEach(b => b.draw())
 }

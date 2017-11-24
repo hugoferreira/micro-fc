@@ -1,3 +1,5 @@
+'use strict'
+
 const fps = 60
 const width = 128
 const height = 128
@@ -70,10 +72,9 @@ function refresh() {
     }
 
     for (let i = 0, j = 0; i < videomem.length; i += 1, j += 4) {
-        const oldc = videobuffer.getUint32(j)
-        const newc = palette[videomem[i]]
-        if (oldc !== newc) {
-            videobuffer.setUint32(j, newc)
+        const dst = palette[videomem[i]]
+        if (videobuffer.getUint32(j) !== dst) {
+            videobuffer.setUint32(j, dst)
             dirty = true
         }
     }
