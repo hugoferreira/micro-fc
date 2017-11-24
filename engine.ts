@@ -1,4 +1,4 @@
-const fps = 30
+const fps = 60
 const width = 128
 const height = 128
 const screenWidth = 384
@@ -227,7 +227,8 @@ function spr(s: number, x0: number, y0: number, scale = 1, transparentColor = 0,
         if (color !== transparentColor) {
             const x = (p % 8) * scale + x0
             const y = (Math.floor(p / 8)) * scale + y0
-            rectfill(x, y, x + (scale - 1), y + (scale - 1), color)
+            if (scale > 1) rectfill(x, y, x + (scale - 1), y + (scale - 1), color)
+            else pset(x, y, color)
         }
     }
 }
