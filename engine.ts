@@ -61,15 +61,27 @@ function refreshBorder() {
 
 function refresh() {
     requestAnimationFrame(refresh)
+    let dirty = false
 
     if (window.draw !== undefined) draw()
-    if (drawState.borderChanged) refreshBorder()
+    if (drawState.borderChanged) {
+        dirty = true
+        refreshBorder()
+    }
 
-    for (let i = 0, j = 0; i < videomem.length; i += 1, j += 4)
-        videobuffer.setUint32(j, palette[videomem[i]])
+    for (let i = 0, j = 0; i < videomem.length; i += 1, j += 4) {
+        const oldc = videobuffer.getUint32(j)
+        const newc = palette[videomem[i]]
+        if (oldc !== newc) {
+            videobuffer.setUint32(j, newc)
+            dirty = true
+        }
+    }
 
-    bctx.putImageData(image, 0, 0)
-    sctx.drawImage(bcanvas, borderSize / xScale, borderSize / yScale)
+    if (dirty) {
+        bctx.putImageData(image, 0, 0)
+        sctx.drawImage(bcanvas, borderSize / xScale, borderSize / yScale)
+    }
 }
 
 // Text
@@ -226,7 +238,7 @@ function spr(s: number, x0: number, y0: number, scale = 1, transparentColor = 0,
         const color = spriteSheet[offset + p]
         if (color !== transparentColor) {
             const x = (p % 8) * scale + x0
-            const y = (Math.floor(p / 8)) * scale + y0
+            const y = (p >> 3) * scale + y0
             if (scale > 1) rectfill(x, y, x + (scale - 1), y + (scale - 1), color)
             else pset(x, y, color)
         }
