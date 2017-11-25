@@ -39,10 +39,11 @@ const drawState = {
     clipArea: { x0: 0, y0: 0, x1: width - 1, y1: height - 1 }
 };
 let frame = 0;
+let updateCall = () => { };
+let drawCall = bootscreen;
 function eventLoop() {
     frame += 1;
-    if (window.update !== undefined)
-        update();
+    updateCall();
     mouse.click = false;
 }
 function refreshBorder() {
@@ -53,8 +54,7 @@ function refreshBorder() {
 function refresh() {
     requestAnimationFrame(refresh);
     let dirty = false;
-    if (window.draw !== undefined)
-        draw();
+    drawCall();
     if (drawState.borderChanged) {
         dirty = true;
         refreshBorder();
@@ -147,8 +147,8 @@ function rect(x0, y0, x1, y1, color) {
     line(x0, y1, x0, y0, color);
 }
 function unsaferectfill(x0, y0, x1, y1, color) {
-    for (let y = y0 * width; y <= y1 * width; y += width)
-        videomem.fill(color, y + x0, y + x1 + 1);
+    for (let base = y0 * width + x0; base <= y1 * width; base += width)
+        videomem.fill(color, base, base + x1 + 1);
 }
 function rectfill(x0, y0, x1, y1, color = drawState.penColor) {
     unsaferectfill(Math.max(drawState.clipArea.x0, x0), Math.max(drawState.clipArea.y0, y0), Math.min(drawState.clipArea.x1, x1), Math.min(drawState.clipArea.y1, y1), drawState.drawPalette[color]);
@@ -197,7 +197,7 @@ function spr(s, x0, y0, scale = 1, transparentColor = 0, bank = drawState.sprite
         const color = spriteSheet[offset + p];
         if (color !== transparentColor) {
             const x = (p % 8) * scale + x0;
-            const y = (p >> 3) * scale + y0;
+            const y = Math.floor(p / 8) * scale + y0;
             if (scale > 1)
                 rectfill(x, y, x + (scale - 1), y + (scale - 1), color);
             else
@@ -228,6 +228,19 @@ function pal(src, dst) {
         drawState.drawPalette[src] = dst;
     else
         drawState.drawPalette = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+}
+function bootscreen() {
+    decodeSprite([0x11111111, 0x11111111, 0x11111111, 0x11111111, 0x11111111, 0x11111111, 0x11111111, 0x11111111], 0);
+    decodeSprite([0x10101010, 0x01010101, 0x10101010, 0x01010101, 0x10101010, 0x01010101, 0x10101010, 0x01010101], 1);
+    cls();
+    pal();
+    for (let y = 0; y < 16; y += 1)
+        for (let x = 0; x < 16; x += 1) {
+            pal(1, x);
+            spr(0, x * 8, y * 8);
+            pal(1, y);
+            spr(1, x * 8, y * 8);
+        }
 }
 // Initialize
 window.onload = () => {
@@ -264,9 +277,15 @@ window.onload = () => {
         0x60305F, 0x505050, 0x60E0FF, 0x14E01F,
         0x9D4040, 0xFF8ABF, 0xACACAC, 0xFFF210,
         0xED1D25, 0xFF903C, 0xFFCCBC, 0xFFFFFF]);
-    if (window.init !== undefined)
-        init();
     window.setInterval(() => eventLoop(), 1000 / fps);
     refresh();
+    window.setTimeout(() => {
+        if (window.init !== undefined)
+            init();
+        if (window.update !== undefined)
+            updateCall = window.update;
+        if (window.draw !== undefined)
+            drawCall = window.draw;
+    }, 1000);
 };
 //# sourceMappingURL=engine.js.map
