@@ -8,16 +8,13 @@ function init() {
         0x10101010, 0x01010101, 0x10101010, 0x01010101,
         0x10101010, 0x01010101, 0x10101010, 0x01010101,
     ], 1)
-
-    decodeSprite([0x11100, 0x10100, 0x10100, 0x10100, 0x11100, 0, 0, 0], 2)
-    decodeSprite([0x11000, 0x01000, 0x01000, 0x01000, 0x11100, 0, 0, 0], 3)
 }
 
-function update() {
+function draw() {
     cls()
     pal()
 
-    for (y = 0; y < 16; y += 1)
+    for (y = 0; y < 16; y += 1) {
         for (x = y; x < 16; x += 1) {
             pal(1, x)
             spr(0, x*8, y*8)
@@ -25,7 +22,7 @@ function update() {
             spr(1, x*8, y*8)
         }
 
-    pal(1, 15)
-    spr(2, 0, 1)
-    spr(3, 7, 9)
+        pen(15)
+        print(y.toString(), x*8+2, y*8+2)
+    }
 }

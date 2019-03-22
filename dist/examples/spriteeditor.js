@@ -9,9 +9,10 @@ function init() {
 
 function doPalette(x, y) {
     const ratio = 6
+    const nColors = 16
 
-    rect(x - 1, y - 1, x + ratio + 1, y + 16 * ratio, 0)
-    for (let color = 0; color <= 15; color += 1) {
+    rect(x - 1, y - 1, x + ratio + 1, y + nColors * ratio, 0)
+    for (let color = 0; color < nColors; color += 1) {
         rectfill(x, y + color * ratio, x + ratio, y + (color + 1) * ratio - 1, color)
     }
 
@@ -19,8 +20,8 @@ function doPalette(x, y) {
     rect(x, y1, x + ratio, y1 + ratio - 1, 0)
     rect(x - 1, y1 - 1, x + ratio + 1, y1 + ratio, 15)
 
-    clkgrid(x, y, ratio, 16 * ratio - 1, 1, 16, (r, _) => color = r)
-    overgrid(x, y, ratio, 16 * ratio - 1, 1, 16, (r, _) => tooltip = `Color:${r}`)
+    clkgrid(x, y, ratio, nColors * ratio - 1, 1, nColors, (r, _) => color = r)
+    overgrid(x, y, ratio, nColors * ratio - 1, 1, nColors, (r, _) => tooltip = `Color:${r}`)
 }
 
 function doSpriteCanvas(x, y) {

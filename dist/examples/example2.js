@@ -1,13 +1,15 @@
 var x = 64, y = 30
 
-function update() {
+function draw() {
+    cls()
+
     pen(7)
     print("Hello World!", 0, 0)
 
-    pen(3)
+    pen(15)
     line(0, 64, 127, 127)
 
-    pen(1)
+    pen(14)
     pset(x, y, 0)
     pset(x - 1, y)
     pset(x + 1, y)
