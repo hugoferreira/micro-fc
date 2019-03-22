@@ -14,10 +14,6 @@
             true,
             "never"
         ],
-        "arrow-parens": [
-            true,
-            "ban-single-arg-parens"
-        ],
         "max-classes-per-file": [
             false
         ],
