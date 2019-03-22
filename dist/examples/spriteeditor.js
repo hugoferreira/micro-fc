@@ -15,12 +15,12 @@ function doPalette(x, y) {
         rectfill(x, y + color * ratio, x + ratio, y + (color + 1) * ratio - 1, color)
     }
 
-    clkgrid(x, y, ratio, 16 * ratio - 1, 1, 16, (r, c) => { color = r; tooltip = `Color:${r}` })
-
     const y1 = y + color * ratio
-
     rect(x, y1, x + ratio, y1 + ratio - 1, 0)
     rect(x - 1, y1 - 1, x + ratio + 1, y1 + ratio, 15)
+
+    clkgrid(x, y, ratio, 16 * ratio - 1, 1, 16, (r, _) => color = r)
+    overgrid(x, y, ratio, 16 * ratio - 1, 1, 16, (r, _) => tooltip = `Color:${r}`)
 }
 
 function doSpriteCanvas(x, y) {
@@ -30,9 +30,7 @@ function doSpriteCanvas(x, y) {
     spr(sprite, x, y, 12, 16, spriteBank)
 
     clkgrid(x, y, 8 * ratio, 8 * ratio, 8, 8, (r, c) => sset(sprite, c, r, color, spriteBank))
-
-    if (inrect(mouse.x, mouse.y, x, y, x + 8 * ratio - 1, y + 8 * ratio - 1))
-        tooltip = `X:${Math.floor((mouse.x - x) / ratio)} Y:${Math.floor((mouse.y - y) / ratio)}`
+    overgrid(x, y, 8 * ratio, 8 * ratio, 8, 8, (r, c) => tooltip = `X:${r} Y:${c}`)
 }
 
 function doSpriteSheet(x, y, cols = 16, rows = 4) {
@@ -49,6 +47,7 @@ function doSpriteSheet(x, y, cols = 16, rows = 4) {
     rect(x0 - 2, y0 - 2, x1 + 2, y1 + 2, 0)
 
     clkgrid(x, y, cols * 8, rows * 8, cols, rows, (r, c) => sprite = r * cols + c)
+    overgrid(x, y, cols * 8, rows * 8, cols, rows, (r, c) => tooltip = `Sprite:${r * cols + c}`)
 }
 
 /*

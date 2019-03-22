@@ -271,6 +271,13 @@ function clkgrid(x0: number, y0: number, width: number, height: number, hslices:
     }
 }
 
+function overgrid(x0: number, y0: number, width: number, height: number, hslices: number, vslices: number, callback: (r, c) => void, mouseevt = 'down') {
+    if (inrect(mouse.x, mouse.y, x0, y0, x0 + width, y0 + height)) {
+        const pos = posgrid(mouse.x, mouse.y, x0, y0, width, height, hslices, vslices)
+        if (pos !== undefined) callback(pos.y, pos.x)
+    }
+}
+
 function setpal(values: number[]) {
     palette = new Uint32Array(values.map(v => (v << 8) | 0xFF))
 }
