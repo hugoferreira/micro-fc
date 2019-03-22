@@ -16,31 +16,32 @@ const users = [
 const stars = []
 const nStars = 32
 
-const newStar = () => ({ pos: [Math.random() * width, Math.random() * height], color: Math.random() * 15, speed: Math.random() + 0.1 })
+const newStar = () => ({ pos: [rnd(width), rnd(height)], color: rnd(15), speed: Math.random() + 0.1 })
 
 function init() {
-    for (let i = 0; i < nStars; i += 1) {
+    for (let i = 0; i < nStars; i += 1) 
         stars.push(newStar())
-    }    
 }
 
 function update() {
     for (const s of stars) {
-        s.pos[1] = s.pos[1] - s.speed
+        s.pos[1] -= s.speed
         if (s.pos[1] < 0) {
-            s.pos[0] = Math.random() * width
+            s.pos[0] = rnd(width)
             s.pos[1] = height
         }
     }
 }
 
+const place = (i) => `${i.toString()}${(i === 1) ? 'ST' : ((i === 2) ? 'ND' : (i === 3) ? 'RD' : 'TH')}`
+
 function draw() {
     cls()
+    pen(15)
 
-    for (const s of stars) {
-        pset(Math.floor(s.pos[0]), Math.floor(s.pos[1]), Math.floor(s.color))
-    }   
-
+    for (const s of stars) 
+        pset(Math.floor(s.pos[0]), Math.floor(s.pos[1]), s.color)
+    
     print('RANK', 5, 5)
     print('USER', width / 2 - 2 * fontWidth, 5)
     print('SCORE', width - 6 * 5, 5)
@@ -51,8 +52,10 @@ function draw() {
         const score = users[i][1].toString()
         const color = Math.floor(i / 2) + 7
 
-        print((i + 1).toString(), 5, 8 * i + startY, pen = color)
-        print(name, (width / 2) - (name.length * fontWidth) / 2, 8 * i + startY, pen = color)
-        print(score, width - score.length * fontWidth, 8 * i + startY, pen = color)
+        pen(color)
+
+        print(place(i + 1), 5, 8 * i + startY)
+        printc(name, width / 2, 8 * i + startY)
+        printr(score, width, 8 * i + startY)
     }
 }
