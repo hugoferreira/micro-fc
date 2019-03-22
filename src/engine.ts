@@ -1,5 +1,5 @@
 const fps = 60
-const width = 240
+const width = 256
 const height = 160
 const xScale = 3
 const yScale = 3
@@ -190,7 +190,7 @@ function clip(x0 = 0, y0 = 0, x1 = width - 1, y1 = height - 1) {
 }
 
 function posgrid(currentX: number, currentY: number, x0: number, y0: number, width: number, height: number, hslices: number, vslices: number) {
-    return inrect(currentX, currentY, x0, y0, x0 + width, y0 + width) ? {
+    return inrect(currentX, currentY, x0, y0, x0 + width, y0 + height) ? {
         x: clamp(Math.floor((currentX - x0) / (width / hslices)), hslices - 1, 0),
         y: clamp(Math.floor((currentY - y0) / (height / vslices)), vslices - 1, 0)
     } : undefined
@@ -267,7 +267,6 @@ function sget(s: number, x: number, y: number, bank: number = drawState.spriteBa
 function clkgrid(x0: number, y0: number, width: number, height: number, hslices: number, vslices: number, callback: (r, c) => void, mouseevt = 'down') {
     if (mouse[mouseevt]) {
         const clickSpot = posgrid(mouse.x, mouse.y, x0, y0, width, height, hslices, vslices)
-        console.debug(clickSpot)
         if (clickSpot !== undefined) callback(clickSpot.y, clickSpot.x)
     }
 }
