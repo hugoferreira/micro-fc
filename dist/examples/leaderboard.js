@@ -39,23 +39,27 @@ function draw() {
     cls()
     pen(15)
 
-    for (const s of stars) 
+    for (const s of stars) {
         pset(Math.floor(s.pos[0]), Math.floor(s.pos[1]), s.color)
-    
-    print('RANK', 5, 5)
-    print('USER', width / 2 - 2 * fontWidth, 5)
-    print('SCORE', width - 6 * 5, 5)
+        pset(Math.floor(s.pos[0] + 1), Math.floor(s.pos[1]), s.color)
+        pset(Math.floor(s.pos[0]), Math.floor(s.pos[1] + 1), s.color)
+        pset(Math.floor(s.pos[0] + 1), Math.floor(s.pos[1] + 1), s.color)
+    }
 
-    const startY = 24
-    for (let i = 0; i < users.length; i += 1) {
+    const y = 15
+    print('RANK', 0, y)
+    printc('USER', width / 2, y)
+    printr('SCORE', width, y)
+
+    for (let i = 0, y = 34; i < users.length; i += 1, y += 9) {
         const name = users[i][0].toUpperCase()
         const score = users[i][1].toString()
         const color = Math.floor(i / 2) + 7
 
         pen(color)
 
-        print(place(i + 1), 5, 8 * i + startY)
-        printc(name, width / 2, 8 * i + startY)
-        printr(score, width, 8 * i + startY)
+        print(place(i + 1), 0, y)
+        printc(name, width / 2, y)
+        printr(score, width, y)
     }
 }

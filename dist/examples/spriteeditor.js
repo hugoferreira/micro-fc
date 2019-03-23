@@ -20,7 +20,7 @@ function doPalette(x, y) {
     rect(x, y1, x + ratio, y1 + ratio - 1, 0)
     rect(x - 1, y1 - 1, x + ratio + 1, y1 + ratio, 15)
 
-    clkgrid(x, y, ratio, nColors * ratio - 1, 1, nColors, (r, _) => color = r)
+    clkgrid(x - 1, y - 1, ratio + 3, nColors * ratio, 1, nColors, (r, _) => color = r)
     overgrid(x, y, ratio, nColors * ratio - 1, 1, nColors, (r, _) => tooltip = `Color:${r}`)
 }
 
@@ -65,7 +65,7 @@ function draw() {
     tooltip = ''
     cls(1)
     
-    rectfill(0, 0, width, 9, 12)
+    rectfill(0, 0, width, 8, 12)
     print('Sprite Editor', 1, 1, 15)
 
     // rectfill(0, 10, width, 85, 5)
